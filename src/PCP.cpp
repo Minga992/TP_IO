@@ -3,10 +3,112 @@
 ILOSTLBEGIN
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 
 #define TOL 1E-05
 
-int main(int argc, char **argv) {
+using namespace std;
+
+void procesar_archivo(int& cant_vert, int& cant_aris, vector< pair<int,int> >& aristas, char* nom_archivo)
+{
+	ifstream archivo;
+	archivo.open(nom_archivo);
+
+	char c;
+	string ignorar;
+	int a, b;
+
+	while(true){
+		c = archivo.peek();
+		switch(c)
+		{
+			case 'p':
+				archivo >> c;	// p
+				archivo >> ignorar;	// edge
+				archivo >> cant_vert;	// cantidad de nodos
+				archivo >> cant_aris;	// cantidad de aristas
+				break;
+
+			case 'e':
+				archivo >> c;	// e
+				archivo >> a;	// un extremo de la arista
+				archivo >> b;	// el otro extremo
+				aristas.push_back(make_pair(a-1,b-1));	// resto 1 porque vienen de 1 a n y los usamos de 0 a n-1
+				break;
+
+			default:
+				getline(archivo,ignorar);	// es una linea que no me interesa
+		}
+		if(archivo.peek() == EOF) { break; }
+	}
+
+	archivo.close();
+}
+
+void armar_particion(int cant_vert,int& cant_aris,int cant_part,
+	vector< vector<int> >& particion,vector< pair<int,int> >& aristas){
+	// cout << "inicializo srand" << endl;
+	srand(time(NULL));
+	// cout << "armo arreglo de nodos" << endl;
+	vector<int> nodos;
+	for(int i = 0; i < cant_vert; i++) {
+		nodos.push_back(i);
+	}
+
+	int pertenencia[cant_vert];
+	// cout << "primera ronda" << endl;
+	int n;
+	vector<int>::iterator it;
+	// primera tanda para que no queden conj vacios
+	// cout << "cant_part = " << cant_part << endl;
+	// cout << "cant_vert = " << cant_vert << endl;
+	for (int i = 0; i < cant_part; i++)
+	{
+		n = rand() % nodos.size();
+		// cout << "n = " << n << endl;
+		it = nodos.begin() + n;
+		// cout << "en el medio" << endl;
+		// cout << "a ver el tamanio: " << particion.size() << endl;
+		particion[i].push_back(*it);
+		// cout << "lo que agregue = " << *it << endl;
+		pertenencia[*it] = i;
+		it = nodos.erase(it);
+		// cout << "liquide una vuelta" << endl;
+	}
+	// cout << "segunda ronda" << endl;
+	int p;
+	// asigno los demas
+	while(nodos.size() != 0)
+	{
+		n = rand() % nodos.size();
+		it = nodos.begin() + n;
+		p = rand() % cant_part;
+		particion[p].push_back(*it);
+		pertenencia[*it] = p;
+		it = nodos.erase(it);
+	}
+	// cout << "arreglo las aristas" << endl;
+	int a,b;
+	vector< pair<int,int> >::iterator ita = aristas.begin();
+
+	while(ita != aristas.end())
+	{
+		a = (*ita).first;
+		b = (*ita).second;
+		// si la arista esta adentro de un conjunto, la fleto, si no no
+		if(pertenencia[a] == pertenencia[b]) {
+			ita = aristas.erase(ita);
+		}else{
+			ita++;
+		}
+	}
+
+	cant_aris = aristas.size();
+}
+
+int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion
 
 // Datos de la instancia de dieta
 //~ int n = 3;		// cant variables
@@ -24,10 +126,26 @@ int main(int argc, char **argv) {
 //--------------Supongamos que a esta altura tengo las cosas en las siguientes variables--------
 int cant_vert;
 int cant_aris;
-int cant_part;
-vector< vector<int> > particion;
+// cout << "agarro el 2do param" << endl;
+int cant_part = atoi(argv[2]);
+// cout << cant_part << endl;
+vector< vector<int> > particion(cant_part);
 vector< pair<int,int> > aristas;
-
+// cout << "agarro el 1er param" << endl;
+// cout << argv[1] << endl;
+procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
+// cout << "procese el archivo" << endl;
+armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
+cout << "arme particion" << endl;
+for(int i = 0; i < particion.size(); i++)
+{
+	cout << "conjunto " << i << ": ";
+	for (int j = 0; j < particion[i].size(); j++)
+	{
+		cout << particion[i][j] << " ";
+	}
+	cout << endl;
+}
 int n = cant_vert*cant_part + cant_part;
 
 //cant_vert   : cantidad de vertices del grafo V
@@ -66,7 +184,7 @@ int n = cant_vert*cant_part + cant_part;
 	}
 
 
-    
+    cout << "ya se creo el lp" << endl;
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
 	//esta acotado por la cant de vertices... Luego, sumo un cant de vert para representar lo w_j.
@@ -103,7 +221,7 @@ int n = cant_vert*cant_part + cant_part;
 	for (int k = 0; k < particion.size(); k++) {
 		for (int j = k+1; j < cant_part; j++) {
 			for (int i = 0; i < particion[k].size(); i++) {
-				ub[particiones[k][i] + j*cant_vert] = 0;
+				ub[particion[k][i] + j*cant_vert] = 0;
 			}
 		}
 	}
@@ -127,6 +245,7 @@ int n = cant_vert*cant_part + cant_part;
 	delete[] xctype;
 	delete[] colnames;
 
+	cout << "boundee el lp" << endl;
 
 	// CPLEX por defecto minimiza. Le cambiamos el sentido a la funcion objetivo si se quiere maximizar.
 	// CPXchgobjsen(env, lp, CPX_MAX);
@@ -140,12 +259,13 @@ int n = cant_vert*cant_part + cant_part;
 	// rcnt = cuantas restricciones se estan agregando.
 	// nzcnt = # de coeficientes != 0 a ser agregados a la matriz. Solo se pasan los valores que no son cero.
 
-	int ccnt = 0, rcnt = 3, nzcnt = 0; 
+	int ccnt = 0/*, rcnt = 3*/, nzcnt = 0; 
 	// rcnt = 2*cant_vert*cant_part+(cant_part-1)+cant_aris*cant_part;
 	int r1 = cant_vert*cant_part;
-	int r2 = cant_atris*cant_part;
+	int r2 = cant_aris*cant_part;
 	int r3 = cant_part;
 	int r4 = cant_part-1;
+	int rcnt = r1+r2+r3+r4;
 
 	//~ char sense[] = {'G','L','G'}; // Sentido de la desigualdad. 'G' es mayor o igual y 'E' para igualdad.
 	char *sense = new char[rcnt];
@@ -185,7 +305,7 @@ int n = cant_vert*cant_part + cant_part;
 	// xij + xkj <= 1 para todo (i,k) arista, j color
 	int a,b;
 	int i = r1;
-	for (int e = 0; e < cant_aristas; e++) {
+	for (int e = 0; e < cant_aris; e++) {
 		a = aristas[e].first;
 		b = aristas[e].second;
 		//~ for (int i = r1; i < r1+r2; i++) {
@@ -210,7 +330,7 @@ int n = cant_vert*cant_part + cant_part;
 		rhs[i] = 1;
 		for (int k = 0; k < particion[p].size(); k++) {
 			for (int j = 0; j < cant_part; j++) {
-				matind[nzcnt] = particion[p][k] + j*cant_part;
+				matind[nzcnt] = particion[p][k] + j*cant_vert;
 				matval[nzcnt] = 1;
 				nzcnt++;
 			}
@@ -233,7 +353,7 @@ int n = cant_vert*cant_part + cant_part;
 		i++;
 	}
 	
-	
+	cout << "hice restricciones" << endl;
 	//~ //Restriccion de minimas calorias
 	//~ matbeg[0] = nzcnt;
 	//~ rhs[0] = minCalorias;
@@ -263,12 +383,12 @@ int n = cant_vert*cant_part + cant_part;
 
 	// Esta rutina agrega la restriccion al lp.
 	status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
-	  
+	cout << "agregue restricciones" << endl;      
 	if (status) {
 		cerr << "Problema agregando restricciones." << endl;
 		exit(1);
 	}
-    
+	
     delete[] sense;
 	delete[] rhs;
 	delete[] matbeg;
@@ -294,7 +414,7 @@ int n = cant_vert*cant_part + cant_part;
 	}
  
 	// Escribimos el problema a un archivo .lp.
-	//~ status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
+	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
 
 	if (status) {
 		cerr << "Problema escribiendo modelo" << endl;
@@ -308,7 +428,7 @@ int n = cant_vert*cant_part + cant_part;
 	// Optimizamos el problema.
 	//~ status = CPXlpopt(env, lp);	
 	status = CPXmipopt(env, lp);	
-
+	cout << "hice mipopt" << endl;
 	status = CPXgettime(env, &endtime);
 
 	if (status) {
