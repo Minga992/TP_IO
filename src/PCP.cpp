@@ -128,24 +128,25 @@ int cant_vert;
 int cant_aris;
 // cout << "agarro el 2do param" << endl;
 int cant_part = atoi(argv[2]);
-// cout << cant_part << endl;
+//~ cout << cant_part << endl;
 vector< vector<int> > particion(cant_part);
 vector< pair<int,int> > aristas;
 // cout << "agarro el 1er param" << endl;
 // cout << argv[1] << endl;
 procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
 // cout << "procese el archivo" << endl;
+//~ cout << cant_vert << endl;
 armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
-cout << "arme particion" << endl;
-for(int i = 0; i < particion.size(); i++)
-{
-	cout << "conjunto " << i << ": ";
-	for (int j = 0; j < particion[i].size(); j++)
-	{
-		cout << particion[i][j] << " ";
-	}
-	cout << endl;
-}
+//~ cout << "arme particion" << endl;
+//~ for(int i = 0; i < particion.size(); i++)
+//~ {
+	//~ cout << "conjunto " << i << ": ";
+	//~ for (int j = 0; j < particion[i].size(); j++)
+	//~ {
+		//~ cout << particion[i][j] << " ";
+	//~ }
+	//~ cout << endl;
+//~ }
 int n = cant_vert*cant_part + cant_part;
 
 //cant_vert   : cantidad de vertices del grafo V
@@ -184,7 +185,7 @@ int n = cant_vert*cant_part + cant_part;
 	}
 
 
-    cout << "ya se creo el lp" << endl;
+    //~ cout << "ya se creo el lp" << endl;
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
 	//esta acotado por la cant de vertices... Luego, sumo un cant de vert para representar lo w_j.
@@ -227,7 +228,7 @@ int n = cant_vert*cant_part + cant_part;
 	}
 
 	// Agrego las columnas.
-	status = CPXnewcols(env, lp, n, objfun, lb, ub, NULL, colnames);
+	status = CPXnewcols(env, lp, n, objfun, lb, ub, xctype, colnames);
 	  
 	if (status) {
 		cerr << "Problema agregando las variables CPXnewcols" << endl;
@@ -245,7 +246,7 @@ int n = cant_vert*cant_part + cant_part;
 	delete[] xctype;
 	delete[] colnames;
 
-	cout << "boundee el lp" << endl;
+	//~ cout << "boundee el lp" << endl;
 
 	// CPLEX por defecto minimiza. Le cambiamos el sentido a la funcion objetivo si se quiere maximizar.
 	// CPXchgobjsen(env, lp, CPX_MAX);
@@ -353,7 +354,7 @@ int n = cant_vert*cant_part + cant_part;
 		i++;
 	}
 	
-	cout << "hice restricciones" << endl;
+	//~ cout << "hice restricciones" << endl;
 	//~ //Restriccion de minimas calorias
 	//~ matbeg[0] = nzcnt;
 	//~ rhs[0] = minCalorias;
@@ -383,7 +384,7 @@ int n = cant_vert*cant_part + cant_part;
 
 	// Esta rutina agrega la restriccion al lp.
 	status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
-	cout << "agregue restricciones" << endl;      
+	//~ cout << "agregue restricciones" << endl;      
 	if (status) {
 		cerr << "Problema agregando restricciones." << endl;
 		exit(1);
@@ -401,6 +402,21 @@ int n = cant_vert*cant_part + cant_part;
 
 	if (status) {
 		cerr << "Problema seteando SCRIND" << endl;
+		exit(1);
+	}
+	
+	//~ Para que haga Branch & Bound:
+	status = CPXsetintparam(env, CPX_PARAM_MIPSEARCH, CPX_MIPSEARCH_TRADITIONAL);
+	if (status) {
+		cerr << "Problema seteando para que haga branch and bound" << endl;
+		exit(1);
+	}
+
+	//~ Para facilitar la comparación evitamos paralelismo:
+	status = CPXsetintparam(env, CPX_PARAM_THREADS, 1); 
+	
+	if (status) {
+		cerr << "Problema evitando paralelismo" << endl;
 		exit(1);
 	}
     
@@ -428,7 +444,7 @@ int n = cant_vert*cant_part + cant_part;
 	// Optimizamos el problema.
 	//~ status = CPXlpopt(env, lp);	
 	status = CPXmipopt(env, lp);	
-	cout << "hice mipopt" << endl;
+	//~ cout << "hice mipopt" << endl;
 	status = CPXgettime(env, &endtime);
 
 	if (status) {
@@ -444,10 +460,11 @@ int n = cant_vert*cant_part + cant_part;
 	p = CPXgetstatstring(env, solstat, statstring);
 	string statstr(statstring);
 	cout << endl << "Resultado de la optimizacion: " << statstring << endl;
-	if(solstat!=CPX_STAT_OPTIMAL){
+	if(solstat!=CPXMIP_OPTIMAL){
+		//~ cout << "me voy aca" << solstat << endl;
 		exit(1);
 	}  
-    
+    //~ cout << "a ver si pasa por aca" << endl;
 	double objval;
 	status = CPXgetobjval(env, lp, &objval);
 

@@ -11,14 +11,14 @@ CCFLAGS = -m64 -O2 -fPIC -fexceptions -DNDEBUG -DIL_STD
 
 LDFLAGS = $(LP_LIBS) -lc -lm
 
-SRCPRI = dieta.cpp 
+SRCPRI = PCP.cpp 
 
 SOURCES = $(SRCPRI)
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 all: $(OBJECTS) 
-	$(CCC) -o dieta $(OBJECTS) $(CCFLAGS) $(LDFLAGS) -lpthread -lm -lnsl
+	$(CCC) -o pcp $(OBJECTS) $(CCFLAGS) $(LDFLAGS) -lpthread -lm -lnsl
 
 #
 # produce the .o files from the .cc and .c files
