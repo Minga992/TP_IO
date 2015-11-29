@@ -89,6 +89,23 @@ void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 		pertenencia[*it] = p;
 		it = nodos.erase(it);
 	}
+	
+	//~ int x;
+	//~ int y;
+	//~ 
+	//~ for (int i = 0; i < cant_part; i++)
+	//~ {
+		//~ cout << endl << "Cantidad de nodos en conjunto " << i << ": ";
+		//~ cin >> x;
+		//~ cout << endl << "Ingresar los nombres de los nodos: " << endl;
+		//~ for (int j = 0; j < x; j++)
+		//~ {
+			//~ cin >> y;
+			//~ particion[i].push_back(y);
+			//~ pertenencia[y] = i;
+		//~ }
+	//~ }
+	
 	// cout << "arreglo las aristas" << endl;
 	int a,b;
 	vector< pair<int,int> >::iterator ita = aristas.begin();
@@ -138,15 +155,15 @@ procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
 //~ cout << cant_vert << endl;
 armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 //~ cout << "arme particion" << endl;
-//~ for(int i = 0; i < particion.size(); i++)
-//~ {
-	//~ cout << "conjunto " << i << ": ";
-	//~ for (int j = 0; j < particion[i].size(); j++)
-	//~ {
-		//~ cout << particion[i][j] << " ";
-	//~ }
-	//~ cout << endl;
-//~ }
+for(int i = 0; i < particion.size(); i++)
+{
+	cout << "conjunto " << i << ": ";
+	for (int j = 0; j < particion[i].size(); j++)
+	{
+		cout << particion[i][j] << " ";
+	}
+	cout << endl;
+}
 int n = cant_vert*cant_part + cant_part;
 
 //cant_vert   : cantidad de vertices del grafo V
@@ -314,10 +331,10 @@ int n = cant_vert*cant_part + cant_part;
 			matbeg[i] = nzcnt;
 			rhs[i] = 1;
 			// xij
-			matind[nzcnt] = a + j*cant_part;
+			matind[nzcnt] = a + j*cant_vert;
 			matval[nzcnt] = 1;
 			// xkj
-			matind[nzcnt+1] = b + j*cant_part;
+			matind[nzcnt+1] = b + j*cant_vert;
 			matval[nzcnt+1] = 1;
 			nzcnt += 2;
 			i++;
