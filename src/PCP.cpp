@@ -127,20 +127,6 @@ void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 
 int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion
 
-// Datos de la instancia de dieta
-//~ int n = 3;		// cant variables
-//~ double costo[] = {1.8, 2.3,1.5};	// coefs fo
-//~ // filas de la matriz
-//~ double calorias[] = {170,50,300};
-//~ double calcio[] = {3,400,40};
-//~ // bi
-//~ double minCalorias = 2000;
-//~ double maxCalorias = 2300;
-//~ double minCalcio = 1200;
-//~ double maxPan = 3;
-//~ double minLeche = 2;
-
-//--------------Supongamos que a esta altura tengo las cosas en las siguientes variables--------
 int cant_vert;
 int cant_aris;
 // cout << "agarro el 2do param" << endl;
@@ -166,22 +152,10 @@ for(int i = 0; i < particion.size(); i++)
 }
 int n = cant_vert*cant_part + cant_part;
 
-//cant_vert   : cantidad de vertices del grafo V
-//cant_aris   : cantidad de aristas del grafo V -- solo las que unen distintas particiones
-//cant_part   : cantidad de particiones del grafo V
-//particion: arreglo de part que tienen adentro una lista de nodos que la componen.
-//aristas     : lista de pares que representan las aristas
-
-//algo que me diga que nodos estan en cada partición
-
-
-
-//----------------------------------------------------------------------------------------------
-
 // Genero el problema de cplex.
 	int status;
 	CPXENVptr env; // Puntero al entorno.
-	CPXLPptr lp; // Puntero al LP	// VER QUE ESTO SEA LO MISMO
+	CPXLPptr lp; // Puntero al LP
 
 	// Creo el entorno.
 	env = CPXopenCPLEX(&status);
@@ -214,11 +188,11 @@ int n = cant_vert*cant_part + cant_part;
 	lb = new double[n];
 	objfun = new double[n];
 	xctype = new char[n];
-	colnames = new char*[n];  //no estoy seguro de que le podamos poner nombre a esto
+	colnames = new char*[n];
 
 	for (int i = 0; i < n; i++) {
-		ub[i] = 1;  //supongo que esta es la cota, es binaria
-		lb[i] = 0;  //supongo que esta es la cota, es binaria
+		ub[i] = 1;
+		lb[i] = 0;
 		colnames[i] = new char[10];
 		
 		//las primeras son los x_ij que no estan en la fo, por eso el 0, las siguientes son los w_j que si estan
@@ -268,24 +242,19 @@ int n = cant_vert*cant_part + cant_part;
 	// CPLEX por defecto minimiza. Le cambiamos el sentido a la funcion objetivo si se quiere maximizar.
 	// CPXchgobjsen(env, lp, CPX_MAX);
 
-	// ------------------------------Hasta aca ya no es dieta, gordos(?)---------------------------------------
-
-
 	// Generamos de a una las restricciones.
 	// Estos valores indican:
 	// ccnt = numero nuevo de columnas en las restricciones.
 	// rcnt = cuantas restricciones se estan agregando.
 	// nzcnt = # de coeficientes != 0 a ser agregados a la matriz. Solo se pasan los valores que no son cero.
 
-	int ccnt = 0/*, rcnt = 3*/, nzcnt = 0; 
-	// rcnt = 2*cant_vert*cant_part+(cant_part-1)+cant_aris*cant_part;
+	int ccnt = 0, nzcnt = 0; 
 	int r1 = cant_vert*cant_part;
 	int r2 = cant_aris*cant_part;
 	int r3 = cant_part;
 	int r4 = cant_part-1;
 	int rcnt = r1+r2+r3+r4;
 
-	//~ char sense[] = {'G','L','G'}; // Sentido de la desigualdad. 'G' es mayor o igual y 'E' para igualdad.
 	char *sense = new char[rcnt];
 	for (int i = 0; i < rcnt; i++) {
 		if (i < r1+r2) {
@@ -301,9 +270,6 @@ int n = cant_vert*cant_part + cant_part;
 	int *matbeg = new int[rcnt]; //Posicion en la que comienza cada restriccion en matind y matval.
 	int *matind = new int[(r1+r2+r3+r4)*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
 	double *matval = new double[(r1+r2+r3+r4)*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
-
-	// Podria ser que algun coeficiente sea cero. Pero a los sumo vamos a tener 3*n coeficientes. CPLEX va a leer hasta la cantidad
-	// nzcnt que le pasemos.
 
 	// wj es 1 sii algun vertice usa el color j
 	// xij - wj <= 0
@@ -370,34 +336,6 @@ int n = cant_vert*cant_part + cant_part;
 		nzcnt += 2;
 		i++;
 	}
-	
-	//~ cout << "hice restricciones" << endl;
-	//~ //Restriccion de minimas calorias
-	//~ matbeg[0] = nzcnt;
-	//~ rhs[0] = minCalorias;
-	//~ for (int i = 0; i < n; i++) {
-		//~ matind[nzcnt] = i;
-		//~ matval[nzcnt] = calorias[i];
-		//~ nzcnt++;
-	//~ }
-//~ 
-	//~ //Restriccion de maximas calorias
-	//~ matbeg[1] = nzcnt;
-	//~ rhs[1] = maxCalorias;
-	//~ for (int i = 0; i < n; i++) {
-		//~ matind[nzcnt] = i;
-		//~ matval[nzcnt] = calorias[i];
-		//~ nzcnt++;
-	//~ }
-//~ 
-	//~ //Restriccion de minimo calcio
-	//~ matbeg[2] = nzcnt;
-	//~ rhs[2] = minCalcio;
-	//~ for (int i = 0; i < n; i++) {
-		//~ matind[nzcnt] = i;
-		//~ matval[nzcnt] = calcio[i];
-		//~ nzcnt++;
-	//~ }
 
 	// Esta rutina agrega la restriccion al lp.
 	status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
@@ -445,7 +383,19 @@ int n = cant_vert*cant_part + cant_part;
 		cerr << "Problema seteando el tiempo limite" << endl;
 		exit(1);
 	}
- 
+
+	// Para que no se adicionen planos de corte:
+	status = CPXsetintparam(env,CPX_PARAM_EACHCUTLIM, 0);
+	if (status) {
+		cerr << "Problema configurando que no se adicionen planos de corte (a)" << endl;
+		exit(1);
+	}
+	status = CPXsetintparam(env, CPX_PARAM_FRACCUTS, -1);
+	if (status) {
+		cerr << "Problema configurando que no se adicionen planos de corte (b)" << endl;
+		exit(1);
+	}
+
 	// Escribimos el problema a un archivo .lp.
 	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
 
@@ -506,7 +456,6 @@ int n = cant_vert*cant_part + cant_part;
 		exit(1);
 	}
 
-    
 	// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
 	solfile << "Status de la solucion: " << statstr << endl;
 	for (int i = 0; i < n; i++) {
