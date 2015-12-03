@@ -53,10 +53,11 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 				{
 					// arranco la clique con el nodo que encontre
 					clique.push_back(nodos_nom[s]);
+					control[s] = 1;
 					int k;
 					int suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que la clique sirve
 					// miro los demas nodos
-					for(int i = 0; i < cant_nodos; i++)
+					for(int i = 0; i < cant_vert; i++)
 					{
 						// si no es el nodo que agarré al principio...
 						if(i != s)
@@ -94,6 +95,119 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 					}
 					clique.clear();
 				}else{ break; }	// si todos los nodos fueron usados en alguna clique, no busco más
+			}
+		}	
+	}
+	
+	return res;
+}
+
+
+vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_vert,const char** ady_bis, int cant)
+{
+	vector< vector<int> > res;
+	for(int j = 0; j < cant_part; j++)
+	{
+		// este color solo me interesa si fue usado
+		if(sol[cant_vert*cant_part + j] > TOL)
+		{
+			vector<double> nodos_nom(cant_vert);
+			vector<double> nodos_val(cant_vert);
+			
+			// me guardo los valores de los nodos para este color en la solucion hallada
+			for(int i = 0; i < cant_vert; i++)
+			{
+				nodos_val[i] = sol[j*cant_vert + i];
+			}
+			
+			vector<double> nodos_val_aux(nodos_val);
+			
+			// los 'ordeno' en nodos_nom de > a <
+			for(int i = 0; i < cant_vert; i++)
+			{
+				int max = 0;
+				int id = 0;
+				for(int k = 0; k < cant_vert; k++)
+				{
+					if (nodos_val_aux[k] > max)
+					{
+						id = k;
+						max = nodos_val_aux[k];
+					}
+				}
+				nodos_nom[i] = id;
+				nodos_val_aux[id] = -1;
+			}
+			
+			// empiezo a buscar agujeros
+			vector<int> hole;	// aca voy armando el agujero
+			vector<char> control(cant_vert,0);	// aca voy controlando para asegurar que no repito
+			while (res.size() < cant)	// mientras no haya armado todo lo que necesito...
+			{
+				// busco al primer nodo que aun no haya usado en un agujero
+				int s = 0;
+				while(s < cant_vert && control[s] != 0) { s++; }
+				// si encontre alguno...
+				if(s < cant_vert)
+				{
+					// arranco el agujero con el nodo que encontre
+					hole.push_back(nodos_nom[s]);
+					control[s] = 1;
+					int i, k;
+					int ult = s;
+					int suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que el agujero sirve
+					// miro los demas nodos
+					for(i = 0; i < cant_vert; i++)
+					{
+						// si no es el nodo que agarré al principio y es amigo del ultimo que agregué...
+						if(i != s && ady_bis[i][ult])
+						{
+							// veo si cierra un circuito con los nodos que agarré hasta ahora
+							for(k = hole.size()-2; k >= 0; k--)
+							{
+								if(ady_bis[hole[k]][nodos_nom[i]] == 1) { break; }
+							}
+							// si no cierra circuito, lo tomo
+							if(k == -1)
+							{
+								// si este nodo suma, sumo
+								if (nodos_val[nodos_nom[i]] > TOL)
+								{
+									suma += nodos_val[nodos_nom[i]];
+								}else{
+									// si ya dejo de sumar, veo que valga la pena seguir
+									if(suma <= sol[cant_vert*cant_part + j]){ break; }
+								}
+								// si llegue hasta aca, agrego este nodo al agujero
+								hole.push_back(nodos_nom[i]);
+								ult = i; 
+								i = 0;
+							}else if(k == 0){	// ya complete el agujero
+								// veo que el agujero conseguido sirve.  si no, sigo mirando
+								if(hole.size() > 3 && hole.size() % 2 == 0)
+								{
+									if (nodos_val[nodos_nom[i]] > TOL)
+									{
+										suma += nodos_val[nodos_nom[i]];
+									}
+									hole.push_back(nodos_nom[i]);
+									break;
+								}
+							}
+						}
+					}
+					// si este agujero corta a x*, la agrego a res
+					if(i < cant_vert && suma > sol[cant_vert*cant_part + j])
+					{
+						for(int h = 0; h < hole.size(); h++)
+						{
+							control[hole[h]] = 1;
+						}
+						hole.push_back(j);	// aviso para qué color sirve este agujero
+						res.push_back(hole);
+					}
+					hole.clear();
+				}else{ break; }	// si todos los nodos fueron usados en algun agujero, no busco más
 			}
 		}	
 	}

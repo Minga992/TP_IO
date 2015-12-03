@@ -7,6 +7,8 @@ ILOSTLBEGIN
 #include <ctime>
 #include <iostream>
 
+#include "separar.h"
+
 #define TOL 1E-05
 
 using namespace std;
@@ -125,24 +127,70 @@ void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 	cant_aris = aristas.size();
 }
 
+int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char **ady_bis)
+{
+	vector<int> grados(cant_vert, 0);
+	
+	// calculo el grado de cada nodo
+	for (int i = 0; i < aristas_orig.size(); i++)
+	{
+		grados[aristas_orig[i].first]++;
+		grados[aristas_orig[i].second]++;
+	}
+	
+	bool hay_cambios = true;
+	
+	while(hay_cambios)
+	{
+		hay_cambios = false;
+		for (int i = 0; i < cant_vert; i++)
+		{
+			if(grados[i] == 1)	// es una hoja
+			{
+				// busco al padre y podo
+				for(int j = 0; j < cant_vert; j++)
+				{
+					if (ady_bis[i][j])
+					{ 
+						ady_bis[i][j] = 0;
+						ady_bis[j][i] = 0;
+						grados[i]--;
+						grados[j]--;
+						break; 
+					}
+				}
+				hay_cambios = true;
+			}
+		}	
+	}
+	
+	int cuenta = 0;
+	for(int i = 0; i < cant_vert; i++)
+	{
+		if(grados[i] > 0) { cuenta++; }
+	}
+	
+	if (cuenta > 0){ return 0; }
+	
+	return 1;
+}
+
 int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion
 
 int cant_vert;
 int cant_aris;
-// cout << "agarro el 2do param" << endl;
 int cant_part = atoi(argv[2]);
-//~ cout << cant_part << endl;
 vector< vector<int> > particion(cant_part);
 vector< pair<int,int> > aristas;
-// cout << "agarro el 1er param" << endl;
-// cout << argv[1] << endl;
-procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
-// cout << "procese el archivo" << endl;
-//~ cout << cant_vert << endl;
-vector< pair<int,int> > aristas_orig(aristas);
-armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
-//~ cout << "arme particion" << endl;
 
+procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
+
+// mantengo una copia de las aristas porque desp me deshago de las que quedan adentro del mismo conjunto
+vector< pair<int,int> > aristas_orig(aristas);
+
+armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
+
+// matriz de adyacencia - se usa al separar cliques
 char ady[cant_vert][cant_vert];
 for (int i = 0; i < cant_vert; i++)
 {
@@ -151,6 +199,18 @@ for (int i = 0; i < cant_vert; i++)
 		ady[i][j] = 0;
 	}
 }
+
+// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
+char ady_bis[cant_vert][cant_vert];
+for (int i = 0; i < cant_vert; i++)
+{
+	for(int j = 0; j < cant_vert; j++)
+	{
+		ady_bis[i][j] = ady[i][j];
+	}
+}
+
+int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
 
 for(int i = 0; i < aristas_orig.size(); i++)
 {
