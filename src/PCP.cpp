@@ -139,8 +139,25 @@ vector< pair<int,int> > aristas;
 procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
 // cout << "procese el archivo" << endl;
 //~ cout << cant_vert << endl;
+vector< pair<int,int> > aristas_orig(aristas);
 armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 //~ cout << "arme particion" << endl;
+
+char ady[cant_vert][cant_vert];
+for (int i = 0; i < cant_vert; i++)
+{
+	for(int j = 0; j < cant_vert; j++)
+	{
+		ady[i][j] = 0;
+	}
+}
+
+for(int i = 0; i < aristas_orig.size(); i++)
+{
+	ady[aristas_orig[i].first][aristas[i].second] = 1;
+	ady[aristas_orig[i].second][aristas[i].first] = 1;
+}
+
 for(int i = 0; i < particion.size(); i++)
 {
 	cout << "conjunto " << i << ": ";
