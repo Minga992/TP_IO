@@ -127,7 +127,7 @@ void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 	cant_aris = aristas.size();
 }
 
-int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char **ady_bis)
+int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char** ady_bis)
 {
 	vector<int> grados(cant_vert, 0);
 	
@@ -201,7 +201,13 @@ for (int i = 0; i < cant_vert; i++)
 }
 
 // otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
-char ady_bis[cant_vert][cant_vert];
+//~ char ady_bis[cant_vert][cant_vert];
+char** ady_bis = new char*[cant_vert];
+for(int i = 0; i < cant_vert; i++)
+{
+	ady_bis[i] = new char[cant_vert];
+}
+
 for (int i = 0; i < cant_vert; i++)
 {
 	for(int j = 0; j < cant_vert; j++)
@@ -209,6 +215,12 @@ for (int i = 0; i < cant_vert; i++)
 		ady_bis[i][j] = ady[i][j];
 	}
 }
+
+
+
+//********************* DELETEAME ESTAAAAAAAAA ******************************/
+
+
 
 int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
 
