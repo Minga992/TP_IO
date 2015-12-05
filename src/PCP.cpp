@@ -51,35 +51,24 @@ void procesar_archivo(int& cant_vert, int& cant_aris, vector< pair<int,int> >& a
 
 void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 	vector< vector<int> >& particion,vector< pair<int,int> >& aristas){
-	// cout << "inicializo srand" << endl;
 	srand(time(NULL));
-	// cout << "armo arreglo de nodos" << endl;
 	vector<int> nodos;
 	for(int i = 0; i < cant_vert; i++) {
 		nodos.push_back(i);
 	}
 
 	int pertenencia[cant_vert];
-	// cout << "primera ronda" << endl;
 	int n;
 	vector<int>::iterator it;
 	// primera tanda para que no queden conj vacios
-	// cout << "cant_part = " << cant_part << endl;
-	// cout << "cant_vert = " << cant_vert << endl;
 	for (int i = 0; i < cant_part; i++)
 	{
 		n = rand() % nodos.size();
-		// cout << "n = " << n << endl;
 		it = nodos.begin() + n;
-		// cout << "en el medio" << endl;
-		// cout << "a ver el tamanio: " << particion.size() << endl;
 		particion[i].push_back(*it);
-		// cout << "lo que agregue = " << *it << endl;
 		pertenencia[*it] = i;
 		it = nodos.erase(it);
-		// cout << "liquide una vuelta" << endl;
 	}
-	// cout << "segunda ronda" << endl;
 	int p;
 	// asigno los demas
 	while(nodos.size() != 0)
@@ -108,7 +97,6 @@ void armar_particion(int cant_vert,int& cant_aris,int cant_part,
 		//~ }
 	//~ }
 	
-	// cout << "arreglo las aristas" << endl;
 	int a,b;
 	vector< pair<int,int> >::iterator ita = aristas.begin();
 
@@ -175,73 +163,36 @@ int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char*
 	return 1;
 }
 
-int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion
+int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion - PROBABLEMENTE MAS COSAS
 
-int cant_vert;
-int cant_aris;
-int cant_part = atoi(argv[2]);
-vector< vector<int> > particion(cant_part);
-vector< pair<int,int> > aristas;
+int cant_vert;								// cantidad de vertices
+int cant_aris;								// cantidad de aristas
+int cant_part = atoi(argv[2]);				// tamaño de la particion
+vector< vector<int> > particion(cant_part);	// como conformo la particion
+vector< pair<int,int> > aristas;			// aristas
 
+// proceso el archivo
 procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
 
 // mantengo una copia de las aristas porque desp me deshago de las que quedan adentro del mismo conjunto
 vector< pair<int,int> > aristas_orig(aristas);
 
+// particiono
 armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 
-// matriz de adyacencia - se usa al separar cliques
-char ady[cant_vert][cant_vert];
-for (int i = 0; i < cant_vert; i++)
-{
-	for(int j = 0; j < cant_vert; j++)
-	{
-		ady[i][j] = 0;
-	}
-}
+//~ for(int i = 0; i < particion.size(); i++)
+//~ {
+	//~ cout << "conjunto " << i << ": ";
+	//~ for (int j = 0; j < particion[i].size(); j++)
+	//~ {
+		//~ cout << particion[i][j] << " ";
+	//~ }
+	//~ cout << endl;
+//~ }
 
-// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
-//~ char ady_bis[cant_vert][cant_vert];
-char** ady_bis = new char*[cant_vert];
-for(int i = 0; i < cant_vert; i++)
-{
-	ady_bis[i] = new char[cant_vert];
-}
+	int n = cant_vert*cant_part + cant_part;
 
-for (int i = 0; i < cant_vert; i++)
-{
-	for(int j = 0; j < cant_vert; j++)
-	{
-		ady_bis[i][j] = ady[i][j];
-	}
-}
-
-
-
-//********************* DELETEAME ESTAAAAAAAAA ******************************/
-
-
-
-int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
-
-for(int i = 0; i < aristas_orig.size(); i++)
-{
-	ady[aristas_orig[i].first][aristas[i].second] = 1;
-	ady[aristas_orig[i].second][aristas[i].first] = 1;
-}
-
-for(int i = 0; i < particion.size(); i++)
-{
-	cout << "conjunto " << i << ": ";
-	for (int j = 0; j < particion[i].size(); j++)
-	{
-		cout << particion[i][j] << " ";
-	}
-	cout << endl;
-}
-int n = cant_vert*cant_part + cant_part;
-
-// Genero el problema de cplex.
+	// Genero el problema de cplex.
 	int status;
 	CPXENVptr env; // Puntero al entorno.
 	CPXLPptr lp; // Puntero al LP
@@ -264,8 +215,6 @@ int n = cant_vert*cant_part + cant_part;
 		exit(1);
 	}
 
-
-    //~ cout << "ya se creo el lp" << endl;
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
 	//esta acotado por la cant de vertices... Luego, sumo un cant de vert para representar lo w_j.
@@ -325,8 +274,6 @@ int n = cant_vert*cant_part + cant_part;
 	delete[] objfun;
 	delete[] xctype;
 	delete[] colnames;
-
-	//~ cout << "boundee el lp" << endl;
 
 	// CPLEX por defecto minimiza. Le cambiamos el sentido a la funcion objetivo si se quiere maximizar.
 	// CPXchgobjsen(env, lp, CPX_MAX);
@@ -428,7 +375,6 @@ int n = cant_vert*cant_part + cant_part;
 
 	// Esta rutina agrega la restriccion al lp.
 	status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
-	//~ cout << "agregue restricciones" << endl;      
 	if (status) {
 		cerr << "Problema agregando restricciones." << endl;
 		exit(1);
@@ -449,14 +395,15 @@ int n = cant_vert*cant_part + cant_part;
 		exit(1);
 	}
 	
-	//~ Para que haga Branch & Bound:
+	// Para que haga Branch & Bound:
 	status = CPXsetintparam(env, CPX_PARAM_MIPSEARCH, CPX_MIPSEARCH_TRADITIONAL);
 	if (status) {
 		cerr << "Problema seteando para que haga branch and bound" << endl;
 		exit(1);
+		
 	}
 
-	//~ Para facilitar la comparación evitamos paralelismo:
+	// Para facilitar la comparación evitamos paralelismo:
 	status = CPXsetintparam(env, CPX_PARAM_THREADS, 1); 
 	
 	if (status) {
@@ -464,15 +411,6 @@ int n = cant_vert*cant_part + cant_part;
 		exit(1);
 	}
     
-	// Por ahora no va a ser necesario, pero mas adelante si. Setea el tiempo
-	// limite de ejecucion.
-	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600);
-
-	if (status) {
-		cerr << "Problema seteando el tiempo limite" << endl;
-		exit(1);
-	}
-
 	// Para que no se adicionen planos de corte:
 	status = CPXsetintparam(env,CPX_PARAM_EACHCUTLIM, 0);
 	if (status) {
@@ -484,6 +422,43 @@ int n = cant_vert*cant_part + cant_part;
 		cerr << "Problema configurando que no se adicionen planos de corte (b)" << endl;
 		exit(1);
 	}
+	
+	// Para desactivar todos los preprocesamientos
+	status = CPXsetintparam(env, CPX_PARAM_PRESLVND, -1);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_PRESLVND" << endl;
+		exit(1);
+	}
+	status = CPXsetintparam(env, CPX_PARAM_REPEATPRESOLVE, 0);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_REPEATPRESOLVE" << endl;
+		exit(1);
+	}
+	status = CPXsetintparam(env, CPX_PARAM_RELAXPREIND, 0);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_RELAXPREIND" << endl;
+		exit(1);
+	}
+	status = CPXsetintparam(env, CPX_PARAM_REDUCE, 0);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_REDUCE" << endl;
+		exit(1);
+	}
+	status = CPXsetintparam(env, CPX_PARAM_LANDPCUTS, -1);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_LANDPCUTS" << endl;
+		exit(1);
+	}
+
+	// Por ahora no va a ser necesario, pero mas adelante si. Setea el tiempo
+	// limite de ejecucion.
+	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600);
+
+	if (status) {
+		cerr << "Problema seteando el tiempo limite" << endl;
+		exit(1);
+	}
+
 
 	// Escribimos el problema a un archivo .lp.
 	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
@@ -492,6 +467,58 @@ int n = cant_vert*cant_part + cant_part;
 		cerr << "Problema escribiendo modelo" << endl;
 		exit(1);
 	}
+
+	
+	// matriz de adyacencia - se usa al separar cliques
+	//~ char ady[cant_vert][cant_vert];
+	char** ady = new char*[cant_vert];
+	for (int h = 0; h < cant_vert; h++)
+	{
+		ady[h] = new char[cant_vert];
+		for(int j = 0; j < cant_vert; j++)
+		{
+			ady[h][j] = 0;
+		}
+	}
+	for(int h = 0; h < aristas_orig.size(); h++)
+	{
+		ady[aristas_orig[h].first][aristas[h].second] = 1;
+		ady[aristas_orig[h].second][aristas[h].first] = 1;
+	}
+
+	// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
+	//~ char ady_bis[cant_vert][cant_vert];
+	char** ady_bis = new char*[cant_vert];
+
+	for (int h = 0; h < cant_vert; h++)
+	{
+		ady_bis[h] = new char[cant_vert];
+		for(int j = 0; j < cant_vert; j++)
+		{
+			ady_bis[h][j] = ady[h][j];
+		}
+	}
+
+	// saco 'ramas' del grafo para buscar agujeros sólo donde tiene sentido
+	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
+
+
+
+	//********************* ACA VAN LOS PLANOS DE CORTE ******************************/
+	
+	
+
+
+	for (int h = 0; h < cant_vert; h++)
+	{
+		delete[] ady[h];
+		delete[] ady_bis[h];
+	}
+	delete[] ady;
+	delete[] ady_bis;
+
+
+
     
 	// Tomamos el tiempo de resolucion utilizando CPXgettime.
 	double inittime, endtime;
@@ -500,7 +527,6 @@ int n = cant_vert*cant_part + cant_part;
 	// Optimizamos el problema.
 	//~ status = CPXlpopt(env, lp);	
 	status = CPXmipopt(env, lp);	
-	//~ cout << "hice mipopt" << endl;
 	status = CPXgettime(env, &endtime);
 
 	if (status) {
@@ -517,10 +543,9 @@ int n = cant_vert*cant_part + cant_part;
 	string statstr(statstring);
 	cout << endl << "Resultado de la optimizacion: " << statstring << endl;
 	if(solstat!=CPXMIP_OPTIMAL){
-		//~ cout << "me voy aca" << solstat << endl;
 		exit(1);
 	}  
-    //~ cout << "a ver si pasa por aca" << endl;
+    
 	double objval;
 	status = CPXgetobjval(env, lp, &objval);
 

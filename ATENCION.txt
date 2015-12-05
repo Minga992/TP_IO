@@ -1,0 +1,7 @@
+indicar x argv si uso archivo o genero grafo (ver de pasarle los parametros de densidad)
+
+empezar con las variables continuas y pasarlas a enteras desp de cortar
+
+linea 520: ahi armar las matrices dinamicamente, hacer los planos de corte resolviendo la relajacion, deletear las matrices y correr el branch and bound (ver que hacer con los preproc...)
+
+pasar x argv la cant de cortes x iteracion x familia y cant de iteraciones de pdcortes
