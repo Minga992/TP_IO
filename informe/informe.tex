@@ -78,9 +78,42 @@
  
 \newpage
 
-%\section{Ejercicio 1}
-
 \section{Introducción}
+
+En el presente trabajo se realizará un estudio comparativo entre las estrategias Branch and Bound y Cut and Branch sobre el problema del coloreo particionado de grafos(que se explicará en otra sección de este informe) encarado desde Programación Lineal Entera.
+Los objetivos del trabajo son los siguientes:
+
+\begin{itemize}
+
+	\item Interacción con CPLEX:
+	
+	CPLEX es un paquete de software comercial y académico para resolución de problemas de Programación Lineal y Programación Lineal Entera. Uno de los fines de nuestro trabajo consiste entonces en aprender a usar este paquete tanto resolviendo problemas, como reemplazando parte del trabajo que este realiza con código propio.
+	
+	\item Modelado de un PLE:
+	
+	El modelado de un PLEM cumple un rol fundamental, ya que como en general se modelan problemas cuyo mejor algoritmo es exponencial, es importante que el modelo no solo represente correctamente el problema, sino que permita observar la menor cantidad de soluciones posibles(no se como explicar bien esto(ALE)). Por ello, parte del objetivo de este trabajo es no solo realizar un PLEM correcto, sino elaborar estrategias que permitan ver la menor cantidad de sol posibles.
+	
+	\item Desigualdades válidas, cortes e implementación de estos:
+	
+	Otro de los propósitos de este trabajo es lograr un mayor entendimiento de que son y como funcionan los cortes. Si bien en la materia los estudiamos a nivel teórico, es importante toparnos con ellos a nivel práctico e intentar implementarlos. Para esto, utilizaremos las desigualdades válidas clique y odd-hole.
+
+	\item Comparación entre distintos métodos de resolución
+	
+	La última meta será realizar una comparación entre algunos métodos de resolución general:
+	\begin{itemize}
+	
+		\item Branch-and-Bound:
+		
+		(Breve explicación de que es branch and bound(ALE)). Es la resolución automática de CPLEX, por lo que le quitaremos todo el preprocesamiento y cortes que este paquete le añade, con el fin de obtener un resultado basado solamente en Branch-and-Bound 
+		
+		\item Cut-and-Branch:
+		
+		La idea es añadir cortes en el nodo raíz, para luego realizar un Branch-and-Bound clásico, que en teoría debería tomar menos tiempo dado que la formulación del PLE es más restrictiva. Sin embargo, dado que agregar un sinfin de restricciones también provoca una demora, un subobjetivo en esta etapa será encontrar una cantidad apropiada de cortes de manera que se acorte el branch and bound, pero que el preprocesamiento no tome demasiado(lo escribi como el orto(ALE)).
+	
+	\end{itemize}
+	
+	
+\end{itemize}
 
 \newpage
 
