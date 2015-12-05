@@ -165,30 +165,33 @@ int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char*
 
 int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion - PROBABLEMENTE MAS COSAS
 
-int cant_vert;								// cantidad de vertices
-int cant_aris;								// cantidad de aristas
-int cant_part = atoi(argv[2]);				// tamaño de la particion
-vector< vector<int> > particion(cant_part);	// como conformo la particion
-vector< pair<int,int> > aristas;			// aristas
+	int cant_vert;								// cantidad de vertices
+	int cant_aris;								// cantidad de aristas
+	int cant_part = atoi(argv[2]);				// tamaño de la particion
+	vector< vector<int> > particion(cant_part);	// como conformo la particion
+	vector< pair<int,int> > aristas;			// aristas
+	
+	int cant_iter_cortes = atoi(argv[3]); // ??????
+	int cant = atoi(argv[4]); // ????????
 
-// proceso el archivo
-procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
+	// proceso el archivo
+	procesar_archivo(cant_vert,cant_aris,aristas, argv[1]);
 
-// mantengo una copia de las aristas porque desp me deshago de las que quedan adentro del mismo conjunto
-vector< pair<int,int> > aristas_orig(aristas);
+	// mantengo una copia de las aristas porque desp me deshago de las que quedan adentro del mismo conjunto
+	vector< pair<int,int> > aristas_orig(aristas);
 
-// particiono
-armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
+	// particiono
+	armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 
-//~ for(int i = 0; i < particion.size(); i++)
-//~ {
-	//~ cout << "conjunto " << i << ": ";
-	//~ for (int j = 0; j < particion[i].size(); j++)
+	//~ for(int i = 0; i < particion.size(); i++)
 	//~ {
-		//~ cout << particion[i][j] << " ";
+		//~ cout << "conjunto " << i << ": ";
+		//~ for (int j = 0; j < particion[i].size(); j++)
+		//~ {
+			//~ cout << particion[i][j] << " ";
+		//~ }
+		//~ cout << endl;
 	//~ }
-	//~ cout << endl;
-//~ }
 
 	int n = cant_vert*cant_part + cant_part;
 
@@ -304,8 +307,8 @@ armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 
 	double *rhs = new double[rcnt]; // Termino independiente de las restricciones.
 	int *matbeg = new int[rcnt]; //Posicion en la que comienza cada restriccion en matind y matval.
-	int *matind = new int[(r1+r2+r3+r4)*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
-	double *matval = new double[(r1+r2+r3+r4)*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
+	int *matind = new int[rcnt*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
+	double *matval = new double[rcnt*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
 
 	// wj es 1 sii algun vertice usa el color j
 	// xij - wj <= 0
@@ -503,10 +506,155 @@ armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
 
 
-
 	//********************* ACA VAN LOS PLANOS DE CORTE ******************************/
+	double inittime, endtime;
 	
-	
+	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
+	{
+		// resuelvo el lp (relajacion lineal)
+		
+		// Tomamos el tiempo de resolucion utilizando CPXgettime.
+		status = CPXgettime(env, &inittime);
+
+		// Optimizamos el problema como lp
+		status = CPXlpopt(env, lp);	
+		//~ status = CPXmipopt(env, lp);	
+		status = CPXgettime(env, &endtime);
+
+		if (status) {
+			cerr << "Problema optimizando CPLEX" << endl;
+			exit(1);
+		}
+
+		// Chequeamos el estado de la solucion.
+		int solstat;
+		char statstring[510];
+		CPXCHARptr p;
+		solstat = CPXgetstat(env, lp);
+		p = CPXgetstatstring(env, solstat, statstring);
+		string statstr(statstring);
+		cout << endl << "Resultado de la optimizacion: " << statstring << endl;
+		if(solstat!=CPXMIP_OPTIMAL){	// ojo q aca va el del lp comun!!!
+			exit(1);
+		}  
+		
+		double objval;
+		status = CPXgetobjval(env, lp, &objval);
+
+		if (status) {
+			cerr << "Problema obteniendo valor de mejor solucion." << endl;
+			exit(1);
+		}
+		
+		cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
+
+		//~ // Tomamos los valores de la solucion y los escribimos a un archivo.
+		//~ std::string outputfile = "pcp.sol";
+		//~ ofstream solfile(outputfile.c_str());
+
+
+		// Tomamos los valores de todas las variables. Estan numeradas de 0 a n-1.
+		double *sol = new double[n];
+		status = CPXgetx(env, lp, sol, 0, n - 1);
+
+		if (status) {
+			cerr << "Problema obteniendo la solucion del LP." << endl;
+			exit(1);
+		}
+
+		// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
+		//~ solfile << "Status de la solucion: " << statstr << endl;
+		//~ for (int i = 0; i < n; i++) {
+			//~ if (sol[i] > TOL) {
+				//~ solfile << "x_" << i << " = " << sol[i] << endl;
+			//~ }
+		//~ }
+
+		//~ solfile.close();
+		
+		
+		// si sol ya es entero, chau
+		// si no, empiezo a cortar
+		
+		vector< vector<int> > cortes_clique;
+		vector< vector<int> > cortes_odd_hole;
+		cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
+		if(!ver_holes) {	// miro odd holes solo si vale la pena
+			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
+		}
+		
+		if(cortes_clique.empty() && cortes_odd_hole.empty())
+		{
+			// no pude encontrar cortes, me voy y hago el b&b para el mip (cambiar tipo y toda la bola)
+			break;
+		}else{
+			// itero los cortes que se encontraron y armo las nuevas restricciones
+			rcnt = cortes_clique.size()+cortes_odd_hole.size();
+			double *rhs = new double[rcnt]; // Termino independiente de las restricciones.
+			int *matbeg = new int[rcnt]; //Posicion en la que comienza cada restriccion en matind y matval.
+			int *matind = new int[rcnt*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
+			double *matval = new double[rcnt*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
+			nzcnt = 0;
+			char *sense = new char[rcnt];
+			for (int h = 0; h < rcnt; h++) {
+				sense[h] = 'L';
+			}
+
+
+			// cliques:
+			// (sum xpj0 para todo p en la clique) - wj0 <= 0
+			for (i = 0; i < cortes_clique.size(); i++) {
+				matbeg[i] = nzcnt;
+				rhs[i] = 0;
+				int j = cortes_clique[i].back();
+				// xpj0
+				for (int k = 0; k < cortes_clique[i].size()-1; k++)
+				{
+					matind[nzcnt] = cortes_clique[i][k] + j*cant_vert;
+					matval[nzcnt] = 1;
+					nzcnt++;
+				}
+				// wj0
+				matind[nzcnt] = cant_vert*cant_part + j;
+				matval[nzcnt] = -1;
+				nzcnt++;
+			}
+			
+			// agujeros impares
+			// (sum xpj0 para todo p en el agujero impar) - k*wj0 <= 0 (|agujero| = 2k+1)
+			for (int c = 0; c < cortes_odd_hole.size(); c++) {
+				matbeg[i] = nzcnt;
+				rhs[i] = 0;
+				int j = cortes_odd_hole[c].back();
+				// xpj0
+				for (int k = 0; k < cortes_odd_hole[c].size(); k++) 
+				{
+					matind[nzcnt] = cortes_odd_hole[c][k] + j*cant_vert;
+					matval[nzcnt] = 1;
+					nzcnt++;
+				}
+				// wj0
+				matind[nzcnt] = cant_vert*cant_part + j;
+				matval[nzcnt] = -1;
+				nzcnt++;
+				i++;
+			}
+			
+			// Esta rutina agrega la restriccion al lp.
+			status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
+			if (status) {
+				cerr << "Problema agregando restricciones." << endl;
+				exit(1);
+			}
+			
+			delete[] sense;
+			delete[] rhs;
+			delete[] matbeg;
+			delete[] matind;
+			delete[] matval;
+			delete[] sol;
+		}
+	}
 
 
 	for (int h = 0; h < cant_vert; h++)
@@ -521,7 +669,7 @@ armar_particion(cant_vert,cant_aris,cant_part,particion,aristas);
 
     
 	// Tomamos el tiempo de resolucion utilizando CPXgettime.
-	double inittime, endtime;
+	//~ double inittime, endtime;
 	status = CPXgettime(env, &inittime);
 
 	// Optimizamos el problema.

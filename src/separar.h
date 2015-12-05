@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_vert,const char** ady, int cant)
+vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_vert,char** ady, int cant)
 {
 	vector< vector<int> > res;
 	for(int j = 0; j < cant_part; j++)
@@ -105,7 +105,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 }
 
 
-vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_vert,const char** ady_bis, int cant)
+vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_vert,char** ady_bis, int cant)
 {
 	vector< vector<int> > res;
 	for(int j = 0; j < cant_part; j++)
