@@ -129,6 +129,41 @@ A partir de diferentes aplicaciones, surgieron variaciones o generalizaciones de
 
 \section{Modelado del problema}
 
+Variables:
+
+$G$ : Grafo
+
+$V$ : Conjunto de los vértices del $G$
+
+$E$ : Conjunto de las aristas de $G$
+
+$C$ : Conjunto de colores
+
+$P$ : Conjuntos de vértices agrupados según la partición
+
+$x_{ij}$ : es verdadera sii el vértice $i$ es coloreado con el color $j$
+
+$w_j$ :es verdadera sii el color $j$ fue usado
+
+
+
+PLEM:
+
+$Min$ $ \sum_{j\in C} w_j$
+
+Sujeto a:
+
+$x_{ij} - w_j$ $\leq$ $0$   $\forall j \in C$, $\forall i \in V$
+
+$x{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+
+$\sum_{x_i \in P} \sum_{j \in C} x_{ij}$ $=$ $1$  $\forall i \in V$, $\forall p \in P$
+
+$w_j$ $-$ $w_{j+1}$ $\geq$ $0$
+
+$x_{ij}$ $=$ $0$
+
+
 \newpage
 
 \section{Código}
