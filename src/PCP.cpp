@@ -7,163 +7,18 @@ ILOSTLBEGIN
 #include <ctime>
 #include <iostream>
 
+#include "procesar.h"
 #include "separar.h"
 
 #define TOL 1E-05
 
 using namespace std;
 
-void procesar_archivo(int& cant_vert, int& cant_aris, vector< pair<int,int> >& aristas, char* nom_archivo)
-{
-	ifstream archivo;
-	archivo.open(nom_archivo);
-
-	char c;
-	string ignorar;
-	int a, b;
-
-	while(true){
-		c = archivo.peek();
-		switch(c)
-		{
-			case 'p':
-				archivo >> c;	// p
-				archivo >> ignorar;	// edge
-				archivo >> cant_vert;	// cantidad de nodos
-				archivo >> cant_aris;	// cantidad de aristas
-				break;
-
-			case 'e':
-				archivo >> c;	// e
-				archivo >> a;	// un extremo de la arista
-				archivo >> b;	// el otro extremo
-				aristas.push_back(make_pair(a-1,b-1));	// resto 1 porque vienen de 1 a n y los usamos de 0 a n-1
-				break;
-
-			default:
-				getline(archivo,ignorar);	// es una linea que no me interesa
-		}
-		if(archivo.peek() == EOF) { break; }
-	}
-
-	archivo.close();
-}
-
-void armar_particion(int cant_vert,int& cant_aris,int cant_part,
-	vector< vector<int> >& particion,vector< pair<int,int> >& aristas){
-	srand(time(NULL));
-	vector<int> nodos;
-	for(int i = 0; i < cant_vert; i++) {
-		nodos.push_back(i);
-	}
-
-	int pertenencia[cant_vert];
-	int n;
-	vector<int>::iterator it;
-	// primera tanda para que no queden conj vacios
-	for (int i = 0; i < cant_part; i++)
-	{
-		n = rand() % nodos.size();
-		it = nodos.begin() + n;
-		particion[i].push_back(*it);
-		pertenencia[*it] = i;
-		it = nodos.erase(it);
-	}
-	int p;
-	// asigno los demas
-	while(nodos.size() != 0)
-	{
-		n = rand() % nodos.size();
-		it = nodos.begin() + n;
-		p = rand() % cant_part;
-		particion[p].push_back(*it);
-		pertenencia[*it] = p;
-		it = nodos.erase(it);
-	}
-	
-	//~ int x;
-	//~ int y;
-	//~ 
-	//~ for (int i = 0; i < cant_part; i++)
-	//~ {
-		//~ cout << endl << "Cantidad de nodos en conjunto " << i << ": ";
-		//~ cin >> x;
-		//~ cout << endl << "Ingresar los nombres de los nodos: " << endl;
-		//~ for (int j = 0; j < x; j++)
-		//~ {
-			//~ cin >> y;
-			//~ particion[i].push_back(y);
-			//~ pertenencia[y] = i;
-		//~ }
-	//~ }
-	
-	int a,b;
-	vector< pair<int,int> >::iterator ita = aristas.begin();
-
-	while(ita != aristas.end())
-	{
-		a = (*ita).first;
-		b = (*ita).second;
-		// si la arista esta adentro de un conjunto, la fleto, si no no
-		if(pertenencia[a] == pertenencia[b]) {
-			ita = aristas.erase(ita);
-		}else{
-			ita++;
-		}
-	}
-
-	cant_aris = aristas.size();
-}
-
-int podar_grafo(int cant_vert,const vector< pair<int,int> >& aristas_orig, char** ady_bis)
-{
-	vector<int> grados(cant_vert, 0);
-	
-	// calculo el grado de cada nodo
-	for (int i = 0; i < aristas_orig.size(); i++)
-	{
-		grados[aristas_orig[i].first]++;
-		grados[aristas_orig[i].second]++;
-	}
-	
-	bool hay_cambios = true;
-	
-	while(hay_cambios)
-	{
-		hay_cambios = false;
-		for (int i = 0; i < cant_vert; i++)
-		{
-			if(grados[i] == 1)	// es una hoja
-			{
-				// busco al padre y podo
-				for(int j = 0; j < cant_vert; j++)
-				{
-					if (ady_bis[i][j])
-					{ 
-						ady_bis[i][j] = 0;
-						ady_bis[j][i] = 0;
-						grados[i]--;
-						grados[j]--;
-						break; 
-					}
-				}
-				hay_cambios = true;
-			}
-		}	
-	}
-	
-	int cuenta = 0;
-	for(int i = 0; i < cant_vert; i++)
-	{
-		if(grados[i] > 0) { cuenta++; }
-	}
-	
-	if (cuenta > 0){ return 0; }
-	
-	return 1;
-}
-
 int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conjuntos en la particion - PROBABLEMENTE MAS COSAS
+
+	/******************************************************************/
+	/**************** ACOMODO VARIABLES Y PROCESO COSAS ***************/
+	/******************************************************************/
 
 	int cant_vert;								// cantidad de vertices
 	int cant_aris;								// cantidad de aristas
@@ -195,6 +50,11 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	int n = cant_vert*cant_part + cant_part;
 
+
+	/******************************************************************/
+	/*********************** ARRANCO CON CPLEX ************************/
+	/******************************************************************/
+
 	// Genero el problema de cplex.
 	int status;
 	CPXENVptr env; // Puntero al entorno.
@@ -202,7 +62,6 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	// Creo el entorno.
 	env = CPXopenCPLEX(&status);
-
     
 	if (env == NULL) {
 		cerr << "Error creando el entorno" << endl;
@@ -212,11 +71,15 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	// Creo el LP.
 	lp = CPXcreateprob(env, &status, "instancia coloreo particionado");
 
-
 	if (lp == NULL) {
 		cerr << "Error creando el LP" << endl;
 		exit(1);
 	}
+
+
+	/******************************************************************/
+	/*******************          COLUMNAS        *********************/
+	/******************************************************************/
 
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
@@ -224,11 +87,10 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	// Definimos las variables. No es obligatorio pasar los nombres de las variables, pero facilita el debug. La info es la siguiente:
 	double *ub, *lb, *objfun; // Cota superior, cota inferior, coeficiente de la funcion objetivo.
-	char *xctype, **colnames; // tipo de la variable (por ahora son siempre continuas), string con el nombre de la variable.
+	char **colnames; // string con el nombre de la variable.
 	ub = new double[n]; 
 	lb = new double[n];
 	objfun = new double[n];
-	xctype = new char[n];
 	colnames = new char*[n];
 
 	for (int i = 0; i < n; i++) {
@@ -244,10 +106,6 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 			objfun[i] = 1;
 			sprintf(colnames[i],"w_%d",i-cant_vert*cant_part);	// w0,w1... etc
 		}
-
-		// van a ser todas binarias
-		xctype[i] = 'B'; // 'C' es continua, 'B' binaria, 'I' Entera. Para LP (no enteros), este parametro tiene que pasarse como NULL. No lo vamos a usar por ahora.
-		
 	}
 	
 	// ninguna particion puede estar coloreada con un color de etiqueta mayor a su indice
@@ -260,7 +118,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 
 	// Agrego las columnas.
-	status = CPXnewcols(env, lp, n, objfun, lb, ub, xctype, colnames);
+	status = CPXnewcols(env, lp, n, objfun, lb, ub, NULL, colnames);
 	  
 	if (status) {
 		cerr << "Problema agregando las variables CPXnewcols" << endl;
@@ -275,11 +133,16 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	delete[] ub;
 	delete[] lb;
 	delete[] objfun;
-	delete[] xctype;
+	//~ delete[] xctype;
 	delete[] colnames;
 
 	// CPLEX por defecto minimiza. Le cambiamos el sentido a la funcion objetivo si se quiere maximizar.
 	// CPXchgobjsen(env, lp, CPX_MAX);
+
+
+	/******************************************************************/
+	/**********************          FILAS        *********************/
+	/******************************************************************/
 
 	// Generamos de a una las restricciones.
 	// Estos valores indican:
@@ -389,7 +252,11 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	delete[] matind;
 	delete[] matval;
 
-	// Seteo de algunos parametros.
+
+	/******************************************************************/
+	/*******************    ALGUNOS PARAMETROS    *********************/
+	/******************************************************************/
+	
 	// Para desactivar la salida poern CPX_OFF.
 	status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 
@@ -397,6 +264,259 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		cerr << "Problema seteando SCRIND" << endl;
 		exit(1);
 	}
+	
+	// Setea el tiempo limite de ejecucion.
+	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600);
+
+	if (status) {
+		cerr << "Problema seteando el tiempo limite" << endl;
+		exit(1);
+	}
+
+
+	// Escribimos el problema a un archivo .lp.
+	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
+
+	if (status) {
+		cerr << "Problema escribiendo modelo" << endl;
+		exit(1);
+	}
+
+	
+	/******************************************************************/
+	/*******************          MATRICES        *********************/
+	/******************************************************************/
+	
+	// matriz de adyacencia - se usa al separar cliques
+	//~ char ady[cant_vert][cant_vert];
+	char** ady = new char*[cant_vert];
+	for (int h = 0; h < cant_vert; h++)
+	{
+		ady[h] = new char[cant_vert];
+		for(int j = 0; j < cant_vert; j++)
+		{
+			ady[h][j] = 0;
+		}
+	}
+	for(int h = 0; h < aristas_orig.size(); h++)
+	{
+		ady[aristas_orig[h].first][aristas[h].second] = 1;
+		ady[aristas_orig[h].second][aristas[h].first] = 1;
+	}
+
+	// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
+	//~ char ady_bis[cant_vert][cant_vert];
+	char** ady_bis = new char*[cant_vert];
+
+	for (int h = 0; h < cant_vert; h++)
+	{
+		ady_bis[h] = new char[cant_vert];
+		for(int j = 0; j < cant_vert; j++)
+		{
+			ady_bis[h][j] = ady[h][j];
+		}
+	}
+
+	// saco 'ramas' del grafo para buscar agujeros sólo donde tiene sentido
+	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
+
+
+	/******************************************************************/
+	/*******************      PLANOS DE CORTE     *********************/
+	/******************************************************************/
+	
+	double inittime, endtime;
+	
+	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
+	{
+		// resuelvo el lp (relajacion lineal)
+		
+		// Tomamos el tiempo de resolucion utilizando CPXgettime.
+		status = CPXgettime(env, &inittime);
+
+		// Optimizamos el problema como lp
+		status = CPXlpopt(env, lp);	
+		//~ status = CPXmipopt(env, lp);	
+		status = CPXgettime(env, &endtime);
+
+		if (status) {
+			cerr << "Problema optimizando CPLEX" << endl;
+			exit(1);
+		}
+
+		// Chequeamos el estado de la solucion.
+		int solstat;
+		char statstring[510];
+		CPXCHARptr p;
+		solstat = CPXgetstat(env, lp);
+		p = CPXgetstatstring(env, solstat, statstring);
+		string statstr(statstring);
+		cout << endl << "Resultado de la optimizacion: " << statstring << endl;
+		if(solstat!=CPX_STAT_OPTIMAL){
+			exit(1);
+		}  
+		
+		double objval;
+		status = CPXgetobjval(env, lp, &objval);
+
+		if (status) {
+			cerr << "Problema obteniendo valor de mejor solucion." << endl;
+			exit(1);
+		}
+		
+		cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
+
+		// Tomamos los valores de la solucion y los escribimos a un archivo.
+		std::string outputfile = "pcp.sol";
+		ofstream solfile(outputfile.c_str());
+
+
+		// Tomamos los valores de todas las variables. Estan numeradas de 0 a n-1.
+		double *sol = new double[n];
+		status = CPXgetx(env, lp, sol, 0, n - 1);
+
+		if (status) {
+			cerr << "Problema obteniendo la solucion del LP." << endl;
+			exit(1);
+		}
+
+		// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
+		solfile << "Status de la solucion: " << statstr << endl;
+		for (int j = 0; j < n; j++) {
+			if (sol[j] > TOL) {
+				solfile << "x_" << j << " = " << sol[j] << endl;
+			}
+		}
+
+		solfile.close();
+		
+		
+		// si sol ya es entero, chau
+		bool sol_int = true;
+		for (int h = 0; h < n; h++)
+		{
+			if (sol[h] > TOL && sol[h] < 1-TOL)
+			{
+				sol_int = false;
+				break;
+			}
+		}
+		if(sol_int) { break; }
+		
+		// si no, empiezo a cortar		
+		vector< vector<int> > cortes_clique;
+		vector< vector<int> > cortes_odd_hole;
+		cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
+		// miro odd holes solo si vale la pena
+		if(ver_holes != 0) {
+			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
+		}
+		
+		// si no pude encontrar cortes, me voy y hago el b&b para el mip (cambiar tipo y toda la bola)
+		if(cortes_clique.empty() && cortes_odd_hole.empty()){ break; }
+		
+		// itero los cortes que se encontraron y armo las nuevas restricciones
+		rcnt = cortes_clique.size()+cortes_odd_hole.size();
+		double *rhs = new double[rcnt]; // Termino independiente de las restricciones.
+		int *matbeg = new int[rcnt]; //Posicion en la que comienza cada restriccion en matind y matval.
+		int *matind = new int[rcnt*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
+		double *matval = new double[rcnt*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
+		nzcnt = 0;
+		char *sense = new char[rcnt];
+		for (int h = 0; h < rcnt; h++) {
+			sense[h] = 'L';
+		}
+
+		// cliques:
+		// (sum xpj0 para todo p en la clique) - wj0 <= 0
+		for (i = 0; i < cortes_clique.size(); i++) {
+			matbeg[i] = nzcnt;
+			rhs[i] = 0;
+			int j = cortes_clique[i].back();
+			// xpj0
+			for (int k = 0; k < cortes_clique[i].size()-1; k++)
+			{
+				matind[nzcnt] = cortes_clique[i][k] + j*cant_vert;
+				matval[nzcnt] = 1;
+				nzcnt++;
+			}
+			// wj0
+			matind[nzcnt] = cant_vert*cant_part + j;
+			matval[nzcnt] = -1;
+			nzcnt++;
+		}
+		
+		// agujeros impares
+		// (sum xpj0 para todo p en el agujero impar) - k*wj0 <= 0 (|agujero| = 2k+1)
+		for (int c = 0; c < cortes_odd_hole.size(); c++) {
+			matbeg[i] = nzcnt;
+			rhs[i] = 0;
+			int j = cortes_odd_hole[c].back();
+			// xpj0
+			for (int k = 0; k < cortes_odd_hole[c].size(); k++) 
+			{
+				matind[nzcnt] = cortes_odd_hole[c][k] + j*cant_vert;
+				matval[nzcnt] = 1;
+				nzcnt++;
+			}
+			// wj0
+			matind[nzcnt] = cant_vert*cant_part + j;
+			matval[nzcnt] = -1;
+			nzcnt++;
+			i++;
+		}
+		
+		// Esta rutina agrega la restriccion al lp.
+		status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
+		if (status) {
+			cerr << "Problema agregando restricciones." << endl;
+			exit(1);
+		}
+		
+		delete[] sense;
+		delete[] rhs;
+		delete[] matbeg;
+		delete[] matind;
+		delete[] matval;
+		delete[] sol;
+	}
+	
+
+	for (int h = 0; h < cant_vert; h++)
+	{
+		delete[] ady[h];
+		delete[] ady_bis[h];
+	}
+	delete[] ady;
+	delete[] ady_bis;
+
+
+	/******************************************************************/
+	/*******************      CAMBIO LP A MIP      ********************/
+	/******************************************************************/
+
+	// cambio a mip
+	status = CPXchgprobtype(env,lp,CPXPROB_MILP);
+	if (status) {
+		cerr << "Problema cambiando LP a MIP" << endl;
+		exit(1);
+	}
+	
+	// cambio tipo de variables a binarias
+	char *xctype = new char[n];
+	for (int h = 0; h < n; h++){ xctype[i] = 'B'; }
+	status = CPXcopyctype(env,lp,xctype);
+	if (status) {
+		cerr << "Problema cambiando variables a binarias" << endl;
+		exit(1);
+	}
+	
+	delete[] xctype;
+	
+
+	/******************************************************************/
+	/****************     PARAMETROS PARA B&B     *********************/
+	/******************************************************************/
 	
 	// Para que haga Branch & Bound:
 	status = CPXsetintparam(env, CPX_PARAM_MIPSEARCH, CPX_MIPSEARCH_TRADITIONAL);
@@ -453,220 +573,10 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		exit(1);
 	}
 
-	// Por ahora no va a ser necesario, pero mas adelante si. Setea el tiempo
-	// limite de ejecucion.
-	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600);
-
-	if (status) {
-		cerr << "Problema seteando el tiempo limite" << endl;
-		exit(1);
-	}
-
-
-	// Escribimos el problema a un archivo .lp.
-	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
-
-	if (status) {
-		cerr << "Problema escribiendo modelo" << endl;
-		exit(1);
-	}
-
 	
-	// matriz de adyacencia - se usa al separar cliques
-	//~ char ady[cant_vert][cant_vert];
-	char** ady = new char*[cant_vert];
-	for (int h = 0; h < cant_vert; h++)
-	{
-		ady[h] = new char[cant_vert];
-		for(int j = 0; j < cant_vert; j++)
-		{
-			ady[h][j] = 0;
-		}
-	}
-	for(int h = 0; h < aristas_orig.size(); h++)
-	{
-		ady[aristas_orig[h].first][aristas[h].second] = 1;
-		ady[aristas_orig[h].second][aristas[h].first] = 1;
-	}
-
-	// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
-	//~ char ady_bis[cant_vert][cant_vert];
-	char** ady_bis = new char*[cant_vert];
-
-	for (int h = 0; h < cant_vert; h++)
-	{
-		ady_bis[h] = new char[cant_vert];
-		for(int j = 0; j < cant_vert; j++)
-		{
-			ady_bis[h][j] = ady[h][j];
-		}
-	}
-
-	// saco 'ramas' del grafo para buscar agujeros sólo donde tiene sentido
-	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
-
-
-	//********************* ACA VAN LOS PLANOS DE CORTE ******************************/
-	double inittime, endtime;
-	
-	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
-	{
-		// resuelvo el lp (relajacion lineal)
-		
-		// Tomamos el tiempo de resolucion utilizando CPXgettime.
-		status = CPXgettime(env, &inittime);
-
-		// Optimizamos el problema como lp
-		status = CPXlpopt(env, lp);	
-		//~ status = CPXmipopt(env, lp);	
-		status = CPXgettime(env, &endtime);
-
-		if (status) {
-			cerr << "Problema optimizando CPLEX" << endl;
-			exit(1);
-		}
-
-		// Chequeamos el estado de la solucion.
-		int solstat;
-		char statstring[510];
-		CPXCHARptr p;
-		solstat = CPXgetstat(env, lp);
-		p = CPXgetstatstring(env, solstat, statstring);
-		string statstr(statstring);
-		cout << endl << "Resultado de la optimizacion: " << statstring << endl;
-		if(solstat!=CPXMIP_OPTIMAL){	// ojo q aca va el del lp comun!!!
-			exit(1);
-		}  
-		
-		double objval;
-		status = CPXgetobjval(env, lp, &objval);
-
-		if (status) {
-			cerr << "Problema obteniendo valor de mejor solucion." << endl;
-			exit(1);
-		}
-		
-		cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
-
-		//~ // Tomamos los valores de la solucion y los escribimos a un archivo.
-		//~ std::string outputfile = "pcp.sol";
-		//~ ofstream solfile(outputfile.c_str());
-
-
-		// Tomamos los valores de todas las variables. Estan numeradas de 0 a n-1.
-		double *sol = new double[n];
-		status = CPXgetx(env, lp, sol, 0, n - 1);
-
-		if (status) {
-			cerr << "Problema obteniendo la solucion del LP." << endl;
-			exit(1);
-		}
-
-		// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
-		//~ solfile << "Status de la solucion: " << statstr << endl;
-		//~ for (int i = 0; i < n; i++) {
-			//~ if (sol[i] > TOL) {
-				//~ solfile << "x_" << i << " = " << sol[i] << endl;
-			//~ }
-		//~ }
-
-		//~ solfile.close();
-		
-		
-		// si sol ya es entero, chau
-		// si no, empiezo a cortar
-		
-		vector< vector<int> > cortes_clique;
-		vector< vector<int> > cortes_odd_hole;
-		cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
-		if(!ver_holes) {	// miro odd holes solo si vale la pena
-			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
-		}
-		
-		if(cortes_clique.empty() && cortes_odd_hole.empty())
-		{
-			// no pude encontrar cortes, me voy y hago el b&b para el mip (cambiar tipo y toda la bola)
-			break;
-		}else{
-			// itero los cortes que se encontraron y armo las nuevas restricciones
-			rcnt = cortes_clique.size()+cortes_odd_hole.size();
-			double *rhs = new double[rcnt]; // Termino independiente de las restricciones.
-			int *matbeg = new int[rcnt]; //Posicion en la que comienza cada restriccion en matind y matval.
-			int *matind = new int[rcnt*n]; // Array con los indices de las variables con coeficientes != 0 en la desigualdad.
-			double *matval = new double[rcnt*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
-			nzcnt = 0;
-			char *sense = new char[rcnt];
-			for (int h = 0; h < rcnt; h++) {
-				sense[h] = 'L';
-			}
-
-
-			// cliques:
-			// (sum xpj0 para todo p en la clique) - wj0 <= 0
-			for (i = 0; i < cortes_clique.size(); i++) {
-				matbeg[i] = nzcnt;
-				rhs[i] = 0;
-				int j = cortes_clique[i].back();
-				// xpj0
-				for (int k = 0; k < cortes_clique[i].size()-1; k++)
-				{
-					matind[nzcnt] = cortes_clique[i][k] + j*cant_vert;
-					matval[nzcnt] = 1;
-					nzcnt++;
-				}
-				// wj0
-				matind[nzcnt] = cant_vert*cant_part + j;
-				matval[nzcnt] = -1;
-				nzcnt++;
-			}
-			
-			// agujeros impares
-			// (sum xpj0 para todo p en el agujero impar) - k*wj0 <= 0 (|agujero| = 2k+1)
-			for (int c = 0; c < cortes_odd_hole.size(); c++) {
-				matbeg[i] = nzcnt;
-				rhs[i] = 0;
-				int j = cortes_odd_hole[c].back();
-				// xpj0
-				for (int k = 0; k < cortes_odd_hole[c].size(); k++) 
-				{
-					matind[nzcnt] = cortes_odd_hole[c][k] + j*cant_vert;
-					matval[nzcnt] = 1;
-					nzcnt++;
-				}
-				// wj0
-				matind[nzcnt] = cant_vert*cant_part + j;
-				matval[nzcnt] = -1;
-				nzcnt++;
-				i++;
-			}
-			
-			// Esta rutina agrega la restriccion al lp.
-			status = CPXaddrows(env, lp, ccnt, rcnt, nzcnt, rhs, sense, matbeg, matind, matval, NULL, NULL);
-			if (status) {
-				cerr << "Problema agregando restricciones." << endl;
-				exit(1);
-			}
-			
-			delete[] sense;
-			delete[] rhs;
-			delete[] matbeg;
-			delete[] matind;
-			delete[] matval;
-			delete[] sol;
-		}
-	}
-
-
-	for (int h = 0; h < cant_vert; h++)
-	{
-		delete[] ady[h];
-		delete[] ady_bis[h];
-	}
-	delete[] ady;
-	delete[] ady_bis;
-
-
-
+	/******************************************************************/
+	/*******************          HAGO B&B         ********************/
+	/******************************************************************/
     
 	// Tomamos el tiempo de resolucion utilizando CPXgettime.
 	//~ double inittime, endtime;
