@@ -22,13 +22,13 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 			{
 				nodos_val[i] = sol[j*cant_vert + i];
 			}
-			
+
 			vector<double> nodos_val_aux(nodos_val);
 			
 			// los 'ordeno' en nodos_nom de > a <
 			for(int i = 0; i < cant_vert; i++)
 			{
-				int max = 0;
+				double max = 0;
 				int id = 0;
 				for(int k = 0; k < cant_vert; k++)
 				{
@@ -51,13 +51,15 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 				int s = 0;
 				while(s < cant_vert && control[s] != 0) { s++; }
 				// si encontre alguno...
+				//~ cout << nodos_nom[s] << " " << (int)control[s] << endl;
 				if(s < cant_vert)
 				{
 					// arranco la clique con el nodo que encontre
-					clique.push_back(nodos_nom[s]);
+					//~ clique.push_back(nodos_nom[s]);
+					clique.push_back(s);
 					control[s] = 1;
 					int k;
-					int suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que la clique sirve
+					double suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que la clique sirve
 					// miro los demas nodos
 					for(int i = 0; i < cant_vert; i++)
 					{
@@ -67,7 +69,8 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 							// veo si es compañero de todos los que estan en la clique hasta ahora
 							for(k = 0; k < clique.size(); k++)
 							{
-								if(ady[clique[k]][nodos_nom[i]] == 0) { break; }
+								//~ if(ady[clique[k]][nodos_nom[i]] == 0) { break; }
+								if(ady[nodos_nom[clique[k]]][nodos_nom[i]] == 0) { break; }
 							}
 							// si pude mirar toda la clique que fui armando...
 							if(k == clique.size())
@@ -81,19 +84,22 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 									if(suma <= sol[cant_vert*cant_part + j]){ break; }
 								}
 								// si llegue hasta aca, agrego este nodo a la clique
-								clique.push_back(nodos_nom[i]);
+								//~ clique.push_back(nodos_nom[i]);
+								clique.push_back(i);
 							}
 						}
 					}
 					// si esta clique corta a x*, la agrego a res
 					if(suma > sol[cant_vert*cant_part + j])
-					{
+					{	
 						for(int h = 0; h < clique.size(); h++)
 						{
 							control[clique[h]] = 1;
+							clique[h] = nodos_nom[clique[h]];
 						}
 						clique.push_back(j);	// aviso para qué color sirve esta clique
 						res.push_back(clique);
+						//~ cout << endl;
 					}
 					clique.clear();
 				}else{ break; }	// si todos los nodos fueron usados en alguna clique, no busco más
@@ -127,7 +133,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 			// los 'ordeno' en nodos_nom de > a <
 			for(int i = 0; i < cant_vert; i++)
 			{
-				int max = 0;
+				double max = 0;
 				int id = 0;
 				for(int k = 0; k < cant_vert; k++)
 				{
@@ -153,11 +159,12 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 				if(s < cant_vert)
 				{
 					// arranco el agujero con el nodo que encontre
-					hole.push_back(nodos_nom[s]);
+					//~ hole.push_back(nodos_nom[s]);
+					hole.push_back(s);
 					control[s] = 1;
 					int i, k;
 					int ult = s;
-					int suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que el agujero sirve
+					double suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que el agujero sirve
 					// miro los demas nodos
 					for(i = 0; i < cant_vert; i++)
 					{
@@ -167,7 +174,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 							// veo si cierra un circuito con los nodos que agarré hasta ahora
 							for(k = hole.size()-2; k >= 0; k--)
 							{
-								if(ady_bis[hole[k]][nodos_nom[i]] == 1) { break; }
+								if(ady_bis[nodos_nom[hole[k]]][nodos_nom[i]] == 1) { break; }
 							}
 							// si no cierra circuito, lo tomo
 							if(k == -1)
@@ -181,7 +188,8 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 									if(suma <= sol[cant_vert*cant_part + j]){ break; }
 								}
 								// si llegue hasta aca, agrego este nodo al agujero
-								hole.push_back(nodos_nom[i]);
+								//~ hole.push_back(nodos_nom[i]);
+								hole.push_back(i);
 								ult = i; 
 								i = 0;
 							}else if(k == 0){	// ya complete el agujero
@@ -192,7 +200,8 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 									{
 										suma += nodos_val[nodos_nom[i]];
 									}
-									hole.push_back(nodos_nom[i]);
+									//~ hole.push_back(nodos_nom[i]);
+									hole.push_back(i);
 									break;
 								}
 							}
@@ -204,6 +213,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 						for(int h = 0; h < hole.size(); h++)
 						{
 							control[hole[h]] = 1;
+							hole[h] = nodos_nom[hole[h]];
 						}
 						hole.push_back(j);	// aviso para qué color sirve este agujero
 						res.push_back(hole);
