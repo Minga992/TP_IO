@@ -41,6 +41,7 @@ char** genero_cliques(int tam, int& n)
 			for (int c = 0; c < tam-1; c++)
 			{
 				ady[i][j] = 1;
+				ady[j][i] = 1;
 				j++;
 			}
 		}
@@ -54,7 +55,10 @@ char** genero_cliques(int tam, int& n)
 			for (j = 0; j < tam-1; j++)
 			{
 				int jj = tam+(tam-1)*c + j;
-				if(ii != jj){ ady[ii][jj] = 1; }
+				if(ii != jj){ 
+					ady[ii][jj] = 1; 
+					ady[jj][ii] = 1; 
+				}
 			}
 		}
 	}
