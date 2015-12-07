@@ -156,21 +156,23 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 				int s = 0;
 				while(s < cant_vert && control[s] != 0) { s++; }
 				// si encontre alguno...
+				//~ cout << s << endl;
 				if(s < cant_vert)
 				{
 					// arranco el agujero con el nodo que encontre
 					//~ hole.push_back(nodos_nom[s]);
 					hole.push_back(s);
 					control[s] = 1;
-					int i, k;
+					int i,k;
 					int ult = s;
 					double suma = nodos_val[nodos_nom[s]];	// voy sumando para controlar que el agujero sirve
+					//~ cout << "suma: " << suma << endl;
 					// miro los demas nodos
 					for(i = 0; i < cant_vert; i++)
 					{
 						// si no es el nodo que agarré al principio y es amigo del ultimo que agregué...
-						if(i != s && ady_bis[i][ult])
-						{
+						if(i != s && ady_bis[nodos_nom[i]][nodos_nom[ult]])
+						{	
 							// veo si cierra un circuito con los nodos que agarré hasta ahora
 							for(k = hole.size()-2; k >= 0; k--)
 							{
@@ -178,11 +180,12 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 							}
 							// si no cierra circuito, lo tomo
 							if(k == -1)
-							{
+							{	
 								// si este nodo suma, sumo
 								if (nodos_val[nodos_nom[i]] > TOL)
 								{
 									suma += nodos_val[nodos_nom[i]];
+									//~ cout << "suma: " << suma << endl;
 								}else{
 									// si ya dejo de sumar, veo que valga la pena seguir
 									if(suma <= sol[cant_vert*cant_part + j]){ break; }
@@ -217,6 +220,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 						}
 						hole.push_back(j);	// aviso para qué color sirve este agujero
 						res.push_back(hole);
+						//~ cout << "arme agujero" << endl;
 					}
 					hole.clear();
 				}else{ break; }	// si todos los nodos fueron usados en algun agujero, no busco más
