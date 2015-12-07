@@ -129,6 +129,7 @@ A partir de diferentes aplicaciones, surgieron variaciones o generalizaciones de
 
 \section{Modelado del problema}
 
+
 Variables:
 
 $G$ : Grafo
@@ -145,9 +146,27 @@ $x_{ij}$ : es verdadera sii el vértice $i$ es coloreado con el color $j$
 
 $w_j$ :es verdadera sii el color $j$ fue usado
 
-
-
 PLEM:
+
+\begin{tabbing}
+
+\hspace*{4cm} \= \hspace*{4cm} \kill
+
+$Min$ $ \sum_{j\in C} w_j$ \> \\
+
+Sujeto a:\> \\
+
+$x_{ij} - w_j$ $\leq$ $0$\>   $\forall j \in C$, $\forall i \in V$\\
+
+$x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$ \>  $\forall j \in C$, $\forall (i,k) \in E$\\
+
+$\sum_{x_i \in P} \sum_{j \in C} x_{ij}$ $=$ $1$ \> $\forall i \in V$, $\forall p \in P$\\
+
+$w_j$ $-$ $w_{j+1}$ $\geq$ $0$\> \\
+
+$x_{ij}$ $=$ $0$ \> \\
+
+\end{tabbing}
 
 $Min$ $ \sum_{j\in C} w_j$
 
@@ -155,7 +174,7 @@ Sujeto a:
 
 $x_{ij} - w_j$ $\leq$ $0$   $\forall j \in C$, $\forall i \in V$
 
-$x{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+$x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
 
 $\sum_{x_i \in P} \sum_{j \in C} x_{ij}$ $=$ $1$  $\forall i \in V$, $\forall p \in P$
 
@@ -167,6 +186,76 @@ $x_{ij}$ $=$ $0$
 \newpage
 
 \section{Código}
+
+ESTO NO VA ACA, pero voy tirando la demo. Después hay que acomodarlo:
+
+\paragraph{Desigualdad Clique:} Sea $j_0$ $\in$ $ \{ 1,...,n \} $ y sea $K$ una clique maximal de $G$. La desigualdad clique está definida por:
+
+\begin{equation} \label{eq:des1}
+\sum_{p \in K} x_{pj_0} \leq w_{j_0}
+\end{equation}
+
+Demo:
+
+Queremos ver que es desigualdad válida. O sea, que se cumple (\ref{eq:des1}) $\forall$ solución factible.
+
+Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
+
+\begin{equation*}
+\sum_{p \in K} x_{pj_0} > w_{j_0}
+\end{equation*}
+
+\begin{itemize}
+
+	\item Si $w_{j_0} = 0$, ABSURDO, porque no cumple con la restricción $x_{ij} - w_j$ $\leq$ $0$.
+	
+	\item Si $w_{j_0} = 1$ entonces
+	
+	\begin{equation*}
+	\sum_{p \in K} x_{pj_0} > 1
+	\end{equation*}
+
+	O sea que hay al menos dos nodos en $K$ con color $j_0$, lo que significa que $\exists$ $i,h \in K$ tal que $x_{ij_0} =1$ y $x_{hj_0} =1$.
+	ABSURDO, puesto que al $K$ ser clique, $(i,h) \in X$ y no se cumple la restricción $x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+\end{itemize}
+
+Estos absurdos provienen de suponer que existe $s$, por lo que la desigualdad válida es correcta.
+
+
+\paragraph{Desigualdad Odd-hole:} Sea $j_0$ $\in$ $ \{ 1,...,n \} $ y sea $C_{2k+1} = v_1 ,..., v_{2k+1}$, $k \geq 2$ , un agujero de longitud impar. La desigualdad odd-hole está definida por:
+
+\begin{equation} \label{eq:des2}
+\sum_{p \in C_{2k+1}} x_{pj_0} \leq kw_{j_0}
+\end{equation}
+
+Demo:
+
+Queremos ver que es desigualdad válida. O sea, que se cumple (\ref{eq:des2}) $\forall$ solución factible.
+
+Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
+
+\begin{equation*}
+\sum_{p \in C_{2k+1}} x_{pj_0} > kw_{j_0}
+\end{equation*}
+
+\begin{itemize}
+
+	\item Si $w_{j_0} = 0$, ABSURDO, porque no cumple con la restricción $x_{ij} - w_j$ $\leq$ $0$.
+	
+	\item Si $w_{j_0} = 1$ entonces
+	
+	\begin{equation*}
+	\sum_{p \in C_{2k+1}} x_{pj_0} > k
+	\end{equation*}
+
+	O sea que hay al menos $k+1$ nodos en $C_{2k+1}$ con color $j_0$, lo que significa que por LEMA $\exists$ $i,h \in C_{2k+1}$ tal que $x_{ij_0} =1$ y $x_{hj_0} =1$ con $(i,h) \in X$.
+	ABSURDO, pues no se cumple la restricción $x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+\end{itemize}
+
+Estos absurdos provienen de suponer que existe $s$, por lo que la desigualdad válida es correcta.
+
+LEMA1:
+
 
 
 
