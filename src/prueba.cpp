@@ -1,62 +1,51 @@
+#include "generar.h"
 #include "procesar.h"
 #include "separar.h"
 
 using namespace std;
 
 int main()
-{
-	double sol[45] = {0.4,0.4,0.3,0.2,0.1,0.1,0.3,0.8,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		1,0,0,0,0};
-	//~ int ady[4][4];
-	char** ady = new char* [8];
-	for(int i = 0; i < 8; i++)
-	{
-		ady[i] = new char[8];
-		for(int j = 0; j < 8; j++)
-		{
-			//~ if (i == j) { ady[i][j] = 0; }
-			//~ else { ady[i][j] = 1; }
-			//~ 
-			ady[i][j] = 0;
-		}
-	}
+{	
+	srand(time(NULL));
 	
-	ady[2][3] = 1;
-	ady[3][2] = 1;
-	ady[1][0] = 1;
-	ady[0][1] = 1;
-	ady[1][2] = 1;
-	ady[2][1] = 1;
-	ady[3][4] = 1;
-	ady[4][3] = 1;
-	ady[0][4] = 1;
-	ady[4][0] = 1;
-	ady[6][0] = 1;
-	ady[0][6] = 1;
-	ady[5][4] = 1;
-	ady[4][5] = 1;
-	ady[5][7] = 1;
-	ady[7][5] = 1;
-	ady[7][6] = 1;
-	ady[6][7] = 1;
+	int n;
+	char** ady = genero_cliques(5,n);
+	//~ char** ady = genero_agujeros(5,n);
 	
 	vector< pair<int,int> > aristas;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = i; j < 7; j++)
+		for (int j = i; j < n; j++)
 		{
 			if (ady[i][j]){ aristas.push_back(make_pair(i,j)); }
 		}
 	}
-	//~ 
-	//~ for (int i = 0; i < aristas.size(); i++)
-	//~ {
-		//~ cout << aristas[i].first << " " << aristas[i].second << endl;
-	//~ }
+	
+	cout << n << ":";
+	for (int i = 0; i < aristas.size(); i++)
+	{
+		cout << aristas[i].first+1 << "-" << aristas[i].second+1 << ",";
+	}
+	cout << endl;
+	
+	double* sol = new double[n+1]; 
+	for (int i = 0; i < n; i++)
+	{
+		sol[i] = 0.9;
+	}
+	sol[n] = 1;
+	
+	vector< vector<int> > cliques = separo_clique(sol,1,n,ady,10);
+	
+	for(int i = 0; i < cliques.size(); i++)
+	{
+		cout << endl << "clique " << i << endl;
+		for(int j = 0; j < cliques[i].size()-1; j++)
+		{
+			cout << cliques[i][j]+1 << " ";
+		}
+	}
+	cout << endl;
 	
 	//~ int agujero = podar_grafo(7,aristas,ady);
 	
@@ -69,20 +58,20 @@ int main()
 		//~ }
 		//~ cout << endl;
 	//~ }
-	
-	vector< vector<int> > holes = separo_agujero(sol,5,8,ady,5);
-	
-	for(int i = 0; i < holes.size(); i++)
-	{
-		cout << endl << "agujero " << i << endl;
-		for(int j = 0; j < holes[i].size(); j++)
-		{
-			cout << holes[i][j] << " ";
-		}
-	}
-	cout << endl;
-	
+	//~ vector< vector<int> > holes = separo_agujero(sol,5,8,ady,5);
+	//~ 
+	//~ for(int i = 0; i < holes.size(); i++)
+	//~ {
+		//~ cout << endl << "agujero " << i << endl;
+		//~ for(int j = 0; j < holes[i].size(); j++)
+		//~ {
+			//~ cout << holes[i][j] << " ";
+		//~ }
+	//~ }
+	//~ cout << endl;
+	//~ 
 	delete[] ady;
+	delete[] sol;
 
 	return 0;
 }
