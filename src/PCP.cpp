@@ -1,5 +1,6 @@
 #include <ilcplex/ilocplex.h>
 #include <ilcplex/cplex.h>
+//~ #include <ilcplex/cplexcheck.h>
 ILOSTLBEGIN
 #include <string>
 #include <vector>
@@ -274,13 +275,13 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 
 
-	// Escribimos el problema a un archivo .lp.
-	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
-
-	if (status) {
-		cerr << "Problema escribiendo modelo" << endl;
-		exit(1);
-	}
+	//~ // Escribimos el problema a un archivo .lp.
+	//~ status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
+//~ 
+	//~ if (status) {
+		//~ cerr << "Problema escribiendo modelo" << endl;
+		//~ exit(1);
+	//~ }
 
 	
 	/******************************************************************/
@@ -300,8 +301,8 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 	for(int h = 0; h < aristas_orig.size(); h++)
 	{
-		ady[aristas_orig[h].first][aristas[h].second] = 1;
-		ady[aristas_orig[h].second][aristas[h].first] = 1;
+		ady[aristas_orig[h].first][aristas_orig[h].second] = 1;
+		ady[aristas_orig[h].second][aristas_orig[h].first] = 1;
 	}
 
 	// otra matriz de adyacencia - la voy a procesar y a usar al separar agujeros
@@ -365,11 +366,11 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		}
 		
 		cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
-
-		// Tomamos los valores de la solucion y los escribimos a un archivo.
-		std::string outputfile = "pcp.sol";
-		ofstream solfile(outputfile.c_str());
-
+		//~ if(h == 0) {
+		//~ // Tomamos los valores de la solucion y los escribimos a un archivo.
+		//~ std::string outputfile = "pcp.sol";
+		//~ ofstream solfile(outputfile.c_str());
+		//~ }
 
 		// Tomamos los valores de todas las variables. Estan numeradas de 0 a n-1.
 		double *sol = new double[n];
@@ -379,8 +380,11 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 			cerr << "Problema obteniendo la solucion del LP." << endl;
 			exit(1);
 		}
-
+		if(h == 0){
 		// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
+		// Tomamos los valores de la solucion y los escribimos a un archivo.
+		std::string outputfile = "pcp.sol";
+		ofstream solfile(outputfile.c_str());
 		solfile << "Status de la solucion: " << statstr << endl;
 		for (int j = 0; j < n; j++) {
 			if (sol[j] > TOL) {
@@ -389,7 +393,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		}
 
 		solfile.close();
-		
+		}
 		
 		// si sol ya es entero, chau
 		bool sol_int = true;
@@ -496,20 +500,30 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 
 	// cambio a mip
-	status = CPXchgprobtype(env,lp,CPXPROB_MILP);
-	if (status) {
-		cerr << "Problema cambiando LP a MIP" << endl;
-		exit(1);
-	}
+	//~ status = CPXchgprobtype(env,lp,CPXPROB_MILP);
+	//~ if (status) {
+		//~ cerr << "Problema cambiando LP a MIP" << endl;
+		//~ exit(1);
+	//~ }
 	
 	// cambio tipo de variables a binarias
 	char *xctype = new char[n];
-	for (int h = 0; h < n; h++){ xctype[i] = 'B'; }
+	//~ int *indices = new int[n];
+	for (int h = 0; h < n; h++){ 
+		xctype[h] = 'B';
+		//~ indices
+	}
+	//~ status = CPXcopyctype(env,lp,xctype);
 	status = CPXcopyctype(env,lp,xctype);
 	if (status) {
 		cerr << "Problema cambiando variables a binarias" << endl;
 		exit(1);
 	}
+	//~ status = CPXcheckcopyctype(env,lp,xctype);
+	//~ if (status) {
+		//~ cerr << "Problemaaaaaaaaaaa cambiando variables a binarias" << endl;
+		//~ exit(1);
+	//~ }
 	
 	delete[] xctype;
 	
@@ -577,7 +591,14 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************          HAGO B&B         ********************/
 	/******************************************************************/
-    
+	// Escribimos el problema a un archivo .lp.
+	status = CPXwriteprob(env, lp, "pcp.lp", NULL);	// usemos esto para ver que hacemos las cosas bien
+
+	if (status) {
+		cerr << "Problema escribiendo modelo" << endl;
+		exit(1);
+	}    
+	
 	// Tomamos el tiempo de resolucion utilizando CPXgettime.
 	//~ double inittime, endtime;
 	status = CPXgettime(env, &inittime);
@@ -615,7 +636,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
 
 	// Tomamos los valores de la solucion y los escribimos a un archivo.
-	std::string outputfile = "pcp.sol";
+	std::string outputfile = "pcpmip.sol";
 	ofstream solfile(outputfile.c_str());
 
 
