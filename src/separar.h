@@ -28,7 +28,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 			// los 'ordeno' en nodos_nom de > a <
 			for(int i = 0; i < cant_vert; i++)
 			{
-				double max = 0;
+				double max = -1;
 				int id = 0;
 				for(int k = 0; k < cant_vert; k++)
 				{
@@ -39,7 +39,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 					}
 				}
 				nodos_nom[i] = id;
-				nodos_val_aux[id] = -1;
+				nodos_val_aux[id] = -2;
 			}
 			
 			// empiezo a buscar cliques
@@ -51,7 +51,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 				int s = 0;
 				while(s < cant_vert && control[s] != 0) { s++; }
 				// si encontre alguno...
-				//~ cout << nodos_nom[s] << " " << (int)control[s] << endl;
+				cout << nodos_nom[s] << " " << j << endl;
 				if(s < cant_vert)
 				{
 					// arranco la clique con el nodo que encontre
@@ -81,6 +81,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 									suma += nodos_val[nodos_nom[i]];
 								}else{
 									// si ya dejo de sumar, veo que valga la pena seguir
+									cout << "suma" << suma << " " << nodos_nom[i] << " " << j << endl;
 									if(suma <= sol[cant_vert*cant_part + j]){ break; }
 								}
 								// si llegue hasta aca, agrego este nodo a la clique

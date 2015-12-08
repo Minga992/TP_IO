@@ -397,9 +397,9 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		
 		// si sol ya es entero, chau
 		bool sol_int = true;
-		for (int h = 0; h < n; h++)
+		for (int z = 0; z < n; z++)
 		{
-			if (sol[h] > TOL && sol[h] < 1-TOL)
+			if (sol[z] > TOL && sol[z] < 1-TOL)
 			{
 				sol_int = false;
 				break;
@@ -427,8 +427,8 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		double *matval = new double[rcnt*n]; // Array que en la posicion i tiene coeficiente ( != 0) de la variable cutind[i] en la restriccion.
 		nzcnt = 0;
 		char *sense = new char[rcnt];
-		for (int h = 0; h < rcnt; h++) {
-			sense[h] = 'L';
+		for (int z = 0; z < rcnt; z++) {
+			sense[z] = 'L';
 		}
 
 		// cliques:

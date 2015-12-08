@@ -55,81 +55,51 @@ int main(int argc, char **argv)
 	//~ }
 	//~ 
 	//~ archivo.close();
-	//~ cout << n << ":";
-	//~ for (int i = 0; i < aristas.size(); i++)
-	//~ {
-		//~ cout << aristas[i].first+1 << "-" << aristas[i].second+1 << ",";
-	//~ }
-	//~ cout << endl;
-	//~ 
+	cout << cant_vert << ":";
+	for (int i = 0; i < aristas.size(); i++)
+	{
+		cout << aristas[i].first+1 << "-" << aristas[i].second+1 << ",";
+	}
+	cout << endl;
+	
 	double* sol = new double[n]; 
 	for (int i = 0; i < n; i++){ sol[i] = 0; }
-	sol[1] = 1;
+	sol[0] = 0.5;
+	sol[1] = 0.5;
+	sol[2] = 0.5;
+	sol[4] = 0.5;
 	sol[5] = 0.5;
 	sol[6] = 0.5;
 	sol[7] = 0.5;
 	sol[8] = 0.5;
-	sol[9] = 0.333333;
-	sol[10] = 0.333333;
-	sol[11] = 0.333333;
-	sol[12] = 0.666667;
-	sol[13] = 0.333333;
-	sol[15] = 0.333333;
-	sol[16] = 0.333333;
-	sol[17] = 0.333333;
-	sol[19] = 0.333333;
-	sol[21] = 0.166667;
-	sol[22] = 0.333333;
-	sol[25] = 0.333333;
-	sol[26] = 0.166667;
-	sol[28] = 0.166667;
-	sol[29] = 0.166667;
-	sol[30] = 0.166667;
-	sol[32] = 0.166667;
-	sol[35] = 0.166667;
-	sol[36] = 0.166667;
-	sol[37] = 0.166667;
-	sol[39] = 0.166667;
-	sol[41] = 0.166667;
-	sol[42] = 0.166667;
-	sol[43] = 0.166667;
-	sol[44] = 0.166667;
-	sol[46] = 0.166667;
-	sol[47] = 0.166667;
-	sol[48] = 0.166667;
-	sol[49] = 0.166667;
-	sol[50] = 0.166667;
-	sol[52] = 0.166667;
-	sol[54] = 0.166667;
-	sol[55] = 0.166667;
-	sol[56] = 0.166667;
-	sol[57] = 0.166667;
-	sol[59] = 0.166667;
-	sol[60] = 0.166667;
-	sol[62] = 0.166667;
-	sol[63] = 0.166667;
-	sol[65] = 0.166667;
-	sol[67] = 0.166667;
-	sol[68] = 0.166667;
-	sol[69] = 0.166667;
-	sol[70] = 0.166667;
-	sol[72] = 0.166667;
-	sol[75] = 0.166667;
-	sol[76] = 0.166667;
+	sol[10] = 1;
+	sol[13] = 0.5;
+	sol[14] = 0.5;
+	sol[15] = 0.5;
+	sol[17] = 0.5;
+	sol[19] = 0.5;
+	sol[20] = 0.5;
+	sol[24] = 1;
+	sol[29] = 0.5;
+	sol[35] = 0.5;
+	sol[38] = 0.5;
+	sol[42] = 0.5;
+	sol[44] = 0.5;
+	sol[47] = 0.5;
+	sol[48] = 0.5;
+	sol[51] = 0.5;
 	sol[169] = 1;
-	sol[170] = 0.333333;
-	sol[171] = 0.166667;
-	sol[172] = 0.166667;
-	sol[173] = 0.166667;
-	sol[174] = 0.166667;
-	cout << "ya tengo sol" << endl;
+	sol[170] = 1;
+	sol[171] = 0.5;
+	sol[172] = 0.5;
+cout << "ya tengo sol" << endl;
 	//~ for (int i = 0; i < n; i++)
 	//~ {
 		//~ sol[i] = 0.9;
 	//~ }
 	//~ sol[n] = 1;
 	
-	vector< vector<int> > cliques = separo_clique(sol,cant_vert,cant_vert,ady,10);
+	vector< vector<int> > cliques = separo_clique(sol,cant_vert,cant_vert,ady,5);
 	cout << "ya tengo cliques" << endl;
 	for(int i = 0; i < cliques.size(); i++)
 	{
