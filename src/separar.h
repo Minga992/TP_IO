@@ -136,7 +136,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 			// los 'ordeno' en nodos_nom de > a <
 			for(int i = 0; i < cant_vert; i++)
 			{
-				double max = 0;
+				double max = -1;
 				int id = 0;
 				for(int k = 0; k < cant_vert; k++)
 				{
@@ -147,7 +147,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 					}
 				}
 				nodos_nom[i] = id;
-				nodos_val_aux[id] = -1;
+				nodos_val_aux[id] = -2;
 			}
 			
 			// empiezo a buscar agujeros
@@ -159,7 +159,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 				int s = 0;
 				while(s < cant_vert && control[s] != 0) { s++; }
 				// si encontre alguno...
-				cout << s << endl;
+				//~ cout << s << endl;
 				if(s < cant_vert)
 				{
 					// arranco el agujero con el nodo que encontre
@@ -215,16 +215,16 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 					}
 					// si este agujero corta a x*, la agrego a res
 					if(i < cant_vert && suma > sol[cant_vert*cant_part + j])
-					{	cout << "voy a cambiar control" << endl;
+					{	//cout << "voy a cambiar control" << endl;
 						for(int h = 0; h < hole.size(); h++)
 						{
 							control[hole[h]] = 1;
 							hole[h] = nodos_nom[hole[h]];
 						}
-						cout << "voy a pushbackear" << endl;
+						//~ cout << "voy a pushbackear" << endl;
 						hole.push_back(j);	// aviso para qué color sirve este agujero
 						res.push_back(hole);
-						cout << "arme agujero" << endl;
+						//~ cout << "arme agujero" << endl;
 					}
 					hole.clear();
 				}else{ break; }	// si todos los nodos fueron usados en algun agujero, no busco más

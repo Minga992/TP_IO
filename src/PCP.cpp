@@ -320,7 +320,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	// saco 'ramas' del grafo para buscar agujeros sólo donde tiene sentido
 	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
-
+	cout << "voy a ver agujeros? " << ver_holes << endl;
 
 	/******************************************************************/
 	/*******************      PLANOS DE CORTE     *********************/
@@ -410,9 +410,9 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		// si no, empiezo a cortar		
 		vector< vector<int> > cortes_clique;
 		vector< vector<int> > cortes_odd_hole;
-		cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
+		//~ cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
 		// miro odd holes solo si vale la pena
-		if(ver_holes != 0) {
+		if(ver_holes == 0) { cout << "veo agujeros" << endl;
 			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
 		}
 		
@@ -457,7 +457,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 			rhs[i] = 0;
 			int j = cortes_odd_hole[c].back();
 			// xpj0
-			for (int k = 0; k < cortes_odd_hole[c].size(); k++) 
+			for (int k = 0; k < cortes_odd_hole[c].size()-1; k++) 
 			{
 				matind[nzcnt] = cortes_odd_hole[c][k] + j*cant_vert;
 				matval[nzcnt] = 1;
