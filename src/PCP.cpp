@@ -19,7 +19,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/**************** ACOMODO VARIABLES Y PROCESO COSAS ***************/
 	/******************************************************************/
-
+	cout << "acomodo variables y proceso cosas" << endl;
 	int cant_vert;								// cantidad de vertices
 	int cant_aris;								// cantidad de aristas
 	int cant_part = atoi(argv[2]);				// tamaño de la particion
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*********************** ARRANCO CON CPLEX ************************/
 	/******************************************************************/
-
+	cout << "arranco con cplex" << endl;
 	// Genero el problema de cplex.
 	int status;
 	CPXENVptr env; // Puntero al entorno.
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************          COLUMNAS        *********************/
 	/******************************************************************/
-
+	cout << "columnas" << endl;
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
 	//esta acotado por la cant de vertices... Luego, sumo un cant de vert para representar lo w_j.
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/**********************          FILAS        *********************/
 	/******************************************************************/
-
+	cout << "filas" << endl;
 	// Generamos de a una las restricciones.
 	// Estos valores indican:
 	// ccnt = numero nuevo de columnas en las restricciones.
@@ -256,7 +256,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************    ALGUNOS PARAMETROS    *********************/
 	/******************************************************************/
-	
+	cout << "algunos paramteros" << endl;
 	// Para desactivar la salida poern CPX_OFF.
 	status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************          MATRICES        *********************/
 	/******************************************************************/
-	
+	cout << "matrices" << endl;
 	// matriz de adyacencia - se usa al separar cliques
 	//~ char ady[cant_vert][cant_vert];
 	char** ady = new char*[cant_vert];
@@ -324,13 +324,13 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************      PLANOS DE CORTE     *********************/
 	/******************************************************************/
-	
+	cout << "planos de corte" << endl;
 	double inittime, endtime;
 	
 	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
 	{
 		// resuelvo el lp (relajacion lineal)
-		
+		cout << "resuelvo relajacion " << h << endl;
 		// Tomamos el tiempo de resolucion utilizando CPXgettime.
 		status = CPXgettime(env, &inittime);
 
