@@ -410,7 +410,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		// si no, empiezo a cortar		
 		vector< vector<int> > cortes_clique;
 		vector< vector<int> > cortes_odd_hole;
-		//~ cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
+		cortes_clique = separo_clique(sol, cant_part, cant_vert, ady, cant);	// cant se levanta de argv
 		// miro odd holes solo si vale la pena
 		if(ver_holes == 0) { cout << "veo agujeros" << endl;
 			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
@@ -465,7 +465,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 			}
 			// wj0
 			matind[nzcnt] = cant_vert*cant_part + j;
-			matval[nzcnt] = -1;
+			matval[nzcnt] = (int)(cortes_odd_hole[c].size()-1)/(-2);
 			nzcnt++;
 			i++;
 		}
