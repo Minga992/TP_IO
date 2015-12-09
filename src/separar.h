@@ -51,7 +51,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 				int s = 0;
 				while(s < cant_vert && control[s] != 0) { s++; }
 				// si encontre alguno...
-				cout << nodos_nom[s] << " " << j << endl;
+				//~ cout << nodos_nom[s] << " " << j << endl;
 				if(s < cant_vert)
 				{
 					// arranco la clique con el nodo que encontre
@@ -81,8 +81,8 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 									suma += nodos_val[nodos_nom[i]];
 								}else{
 									// si ya dejo de sumar, veo que valga la pena seguir
-									cout << "suma" << suma << " " << nodos_nom[i] << " " << j << endl;
-									if(suma <= sol[cant_vert*cant_part + j]){ break; }
+									//~ cout << "suma" << suma << " " << nodos_nom[i] << " " << j << endl;
+									if(suma <= sol[cant_vert*cant_part + j]+TOL){ break; }
 								}
 								// si llegue hasta aca, agrego este nodo a la clique
 								//~ clique.push_back(nodos_nom[i]);
@@ -92,7 +92,7 @@ vector< vector<int> > separo_clique(const double* sol, int cant_part, int cant_v
 						}
 					}
 					// si esta clique corta a x*, la agrego a res
-					if(suma > sol[cant_vert*cant_part + j])
+					if(suma > sol[cant_vert*cant_part + j]+TOL)
 					{	
 						for(int h = 0; h < clique.size(); h++)
 						{	//cout << h;
@@ -191,7 +191,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 									//~ cout << "suma: " << suma << endl;
 								}else{
 									// si ya dejo de sumar, veo que valga la pena seguir
-									if(suma <= sol[cant_vert*cant_part + j]){ break; }
+									if(suma <= sol[cant_vert*cant_part + j]+TOL){ break; }
 								}
 								// si llegue hasta aca, agrego este nodo al agujero
 								//~ hole.push_back(nodos_nom[i]);
@@ -214,7 +214,7 @@ vector< vector<int> > separo_agujero(const double* sol, int cant_part, int cant_
 						}
 					}
 					// si este agujero corta a x*, la agrego a res
-					if(i < cant_vert && suma > sol[cant_vert*cant_part + j])
+					if(i < cant_vert && suma > sol[cant_vert*cant_part + j]+TOL)
 					{	//cout << "voy a cambiar control" << endl;
 						for(int h = 0; h < hole.size(); h++)
 						{

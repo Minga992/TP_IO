@@ -20,7 +20,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/**************** ACOMODO VARIABLES Y PROCESO COSAS ***************/
 	/******************************************************************/
-	cout << "acomodo variables y proceso cosas" << endl;
+	//~ cout << "acomodo variables y proceso cosas" << endl;
 	int cant_vert;								// cantidad de vertices
 	int cant_aris;								// cantidad de aristas
 	int cant_part = atoi(argv[2]);				// tamaño de la particion
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*********************** ARRANCO CON CPLEX ************************/
 	/******************************************************************/
-	cout << "arranco con cplex" << endl;
+	//~ cout << "arranco con cplex" << endl;
 	// Genero el problema de cplex.
 	int status;
 	CPXENVptr env; // Puntero al entorno.
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************          COLUMNAS        *********************/
 	/******************************************************************/
-	cout << "columnas" << endl;
+	//~ cout << "columnas" << endl;
 	//LOS LIMITES cant_vert*cant_part + cant_part porque x_ij en nuestro PLEM i se acota por la cant de vert 
 	//dado que representa eso, y j se acota por cant de vertices por que representa al color j y el coloreo
 	//esta acotado por la cant de vertices... Luego, sumo un cant de vert para representar lo w_j.
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/**********************          FILAS        *********************/
 	/******************************************************************/
-	cout << "filas" << endl;
+	//~ cout << "filas" << endl;
 	// Generamos de a una las restricciones.
 	// Estos valores indican:
 	// ccnt = numero nuevo de columnas en las restricciones.
@@ -257,7 +257,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************    ALGUNOS PARAMETROS    *********************/
 	/******************************************************************/
-	cout << "algunos paramteros" << endl;
+	//~ cout << "algunos paramteros" << endl;
 	// Para desactivar la salida poern CPX_OFF.
 	status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 
@@ -287,7 +287,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	/*******************          MATRICES        *********************/
 	/******************************************************************/
-	cout << "matrices" << endl;
+	//~ cout << "matrices" << endl;
 	// matriz de adyacencia - se usa al separar cliques
 	//~ char ady[cant_vert][cant_vert];
 	char** ady = new char*[cant_vert];
@@ -320,13 +320,15 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	// saco 'ramas' del grafo para buscar agujeros sólo donde tiene sentido
 	int ver_holes = podar_grafo(cant_vert, aristas_orig, ady_bis); // si da 1, no tiene sentido ver odd holes
-	cout << "voy a ver agujeros? " << ver_holes << endl;
+	//~ cout << "voy a ver agujeros? " << ver_holes << endl;
 
 	/******************************************************************/
 	/*******************      PLANOS DE CORTE     *********************/
 	/******************************************************************/
-	cout << "planos de corte" << endl;
+	//~ cout << "planos de corte" << endl;
 	double inittime, endtime;
+	std::string outputfile2 = "pcp.sol";
+	ofstream solfile2(outputfile2.c_str());
 	
 	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
 	{
@@ -380,20 +382,20 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 			cerr << "Problema obteniendo la solucion del LP." << endl;
 			exit(1);
 		}
-		if(h == 0){
+		//~ if(h == 0){
 		// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
 		// Tomamos los valores de la solucion y los escribimos a un archivo.
-		std::string outputfile = "pcp.sol";
-		ofstream solfile(outputfile.c_str());
-		solfile << "Status de la solucion: " << statstr << endl;
+		//~ std::string outputfile = "pcp.sol";
+		//~ ofstream solfile(outputfile.c_str());
+		solfile2 << "Status de la solucion: " << statstr << endl;
 		for (int j = 0; j < n; j++) {
 			if (sol[j] > TOL) {
-				solfile << "x_" << j << " = " << sol[j] << endl;
+				solfile2 << "x_" << j << " = " << sol[j] << endl;
 			}
 		}
 
-		solfile.close();
-		}
+		//~ solfile.close();
+		//~ }
 		
 		// si sol ya es entero, chau
 		bool sol_int = true;
@@ -415,6 +417,16 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		if(ver_holes == 0) { cout << "veo agujeros" << endl;
 			cortes_odd_hole = separo_agujero(sol, cant_part, cant_vert, ady_bis, cant);
 		}
+		
+		//~ for(int z = 0; z < cortes_clique.size(); z++)
+		//~ {
+			//~ cout << "clique " << z << ": ";
+			//~ for (int w = 0; w < cortes_clique[z].size(); w++)
+			//~ {
+				//~ cout << cortes_clique[z][w] << " ";
+			//~ }
+			//~ cout << endl;
+		//~ }
 		
 		// si no pude encontrar cortes, me voy y hago el b&b para el mip (cambiar tipo y toda la bola)
 		if(cortes_clique.empty() && cortes_odd_hole.empty()){ break; }
@@ -484,7 +496,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		delete[] matval;
 		delete[] sol;
 	}
-	
+	solfile2.close();
 
 	for (int h = 0; h < cant_vert; h++)
 	{
