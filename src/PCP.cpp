@@ -1,6 +1,5 @@
 #include <ilcplex/ilocplex.h>
 #include <ilcplex/cplex.h>
-//~ #include <ilcplex/cplexcheck.h>
 ILOSTLBEGIN
 #include <string>
 #include <vector>
@@ -267,7 +266,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 	
 	// Setea el tiempo limite de ejecucion.
-	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600);
+	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 300);
 
 	if (status) {
 		cerr << "Problema seteando el tiempo limite" << endl;
@@ -327,9 +326,10 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	//~ cout << "planos de corte" << endl;
 	double inittime, endtime;
-	std::string outputfile2 = "pcp.sol";
+	std::string outputfile2(argv[5]);
 	ofstream solfile2(outputfile2.c_str());
-	
+	clock_t start,end;
+	start = clock();
 	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
 	{
 		// resuelvo el lp (relajacion lineal)
@@ -388,6 +388,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		//~ std::string outputfile = "pcp.sol";
 		//~ ofstream solfile(outputfile.c_str());
 		solfile2 << "Status de la solucion: " << statstr << endl;
+		solfile2 << "valor de la fo: " << objval << endl;
 		for (int j = 0; j < n; j++) {
 			if (sol[j] > TOL) {
 				solfile2 << "x_" << j << " = " << sol[j] << endl;
@@ -496,6 +497,8 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		delete[] matval;
 		delete[] sol;
 	}
+	end = clock();
+	solfile2 << "ESTO ES LO QUE TARDE: " << difftime(end,start) << endl;
 	solfile2.close();
 
 	for (int h = 0; h < cant_vert; h++)

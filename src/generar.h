@@ -1,8 +1,75 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
+#include <cstdio>
+#include <fstream>
 
 using namespace std;
+
+void exportar(int cant_nodos, double densidad, vector< pair<int,int> > aristas)
+{
+	// sale con formato dimac
+	
+	char nombre[9];
+	
+	int dens = densidad*10;	// para los valores que usamos de densidad, esto sirve
+	
+	sprintf(nombre,"inst_%d_%d",cant_nodos,dens);
+	
+	ofstream archivo;
+	archivo.open(nombre);
+	
+	archivo << "p edge " << cant_nodos << " " << aristas.size() << endl;
+	
+	for (int i = 0; i < aristas.size(); i++)
+	{	cout << i << endl;
+		archivo << "e " << aristas[i].first+1 << " " << aristas[i].second+1 << endl;
+	}
+	
+	archivo.close();
+}
+
+void generar_grafo(int cant_nodos, double densidad)
+{
+	vector< pair<int,int> > aristas_A;
+	vector< pair<int,int> > aristas_B;
+	
+	// todas las aristas posibles
+	for (int i = 0; i < cant_nodos; i++)
+	{
+		for (int j = i+1; j < cant_nodos; j++)
+		{
+			aristas_A.push_back(make_pair(i,j));
+		}
+	}
+	
+	// voy a filtrar por lo mas chico
+	int cant;
+	if (densidad > 0.5){
+		cant = aristas_A.size()*(1-densidad);
+	}else{
+		cant = aristas_A.size()*densidad;
+	}
+	
+	int r;	
+	vector< pair<int,int> >::iterator it;
+	for (int i = 0; i < cant; i++)
+	{
+		it = aristas_A.begin();
+		r = rand() % aristas_A.size();
+		it += r;
+		aristas_B.push_back(*it);
+		it = aristas_A.erase(it);
+	}
+	
+	if (densidad > 0.5){
+		// las aristas de mi grafo están en aristas_A
+		exportar(cant_nodos, densidad, aristas_A);
+	}else{
+		// las aristas de mi grafo están en aristas_B
+		exportar(cant_nodos, densidad, aristas_B);
+	}
+}
 
 char** genero_cliques(int tam, int& n)
 {
