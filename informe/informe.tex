@@ -53,8 +53,8 @@
 \thispagestyle{empty}
 \materia{Investigación operativa}
 \submateria{Segundo Cuatrimestre de 2015}
-\titulo{Investigación operativa(hay que esforzarse más en esto)}
-%\subtitulo{Subtítulo}
+\titulo{Coloreo Particionado de Grafos}
+\subtitulo{Planos de Corte (INSERTE MEJORAS)}
 \integrante{Confalonieri, Gisela Belén}{511/11}{gise_5291@yahoo.com.ar} % por cada integrante (apellido, nombre) (n° libreta) (e-mail)
 \integrante{Mignanelli, Alejandro Rubén}{609/11}{minga_titere@hotmail.com} 
 
@@ -80,35 +80,38 @@
 
 \section{Introducción}
 
-En el presente trabajo se realizará un estudio comparativo entre las estrategias Branch and Bound y Cut and Branch sobre el problema del coloreo particionado de grafos(que se explicará en otra sección de este informe) encarado desde Programación Lineal Entera.
+En el presente trabajo se realizará un estudio comparativo entre las estrategias {\it Branch and Bound} y {\it Cut and Branch} sobre el problema del coloreo particionado de grafos (que se explicará en otra sección de este informe) al encararlo desde Programación Lineal Entera.
+
 Los objetivos del trabajo son los siguientes:
 
 \begin{itemize}
 
-	\item Interacción con CPLEX:
+	\item {\bf Interacción con CPLEX:}
 	
-	CPLEX es un paquete de software comercial y académico para resolución de problemas de Programación Lineal y Programación Lineal Entera. Uno de los fines de nuestro trabajo consiste entonces en aprender a usar este paquete tanto resolviendo problemas, como reemplazando parte del trabajo que este realiza con código propio.
+	CPLEX es un paquete de software comercial y académico para resolución de problemas de Programación Lineal y Programación Lineal Entera. Uno de los fines de nuestro trabajo consiste entonces en aprender a usar este paquete tanto resolviendo problemas, como reemplazando parte del trabajo que éste realiza con código propio.
 	
-	\item Modelado de un PLE:
+	\item {\bf Modelado de un PLEM:}
 	
-	El modelado de un PLEM cumple un rol fundamental, ya que como en general se modelan problemas cuyo mejor algoritmo es exponencial, es importante que el modelo no solo represente correctamente el problema, sino que permita observar la menor cantidad de soluciones posibles(no se como explicar bien esto(ALE)). Por ello, parte del objetivo de este trabajo es no solo realizar un PLEM correcto, sino elaborar estrategias que permitan ver la menor cantidad de sol posibles.
+	El modelado de un PLEM (Problema de Programación Lineal Entero Mixto) cumple un rol muy importante. Dado que PLEM es NP-difícil, es importante ajustar lo mejor posible el conjunto de soluciones factibles, de manera de tener menos "opciones" que recorrer.  Por ejemplo, en el caso de coloreo de grafos existe el problema de que tiene muchas soluciones simétricas para un mismo grafo, que al fin y al cabo representan una misma solución.  Por ello, parte del objetivo de este trabajo es no sólo realizar un PLEM correcto, sino elaborar estrategias que permitan ver la menor cantidad de soluciones posibles.
 	
-	\item Desigualdades válidas, cortes e implementación de estos:
+	\item {\bf Desigualdades válidas e implementación de planos de corte:}
 	
-	Otro de los propósitos de este trabajo es lograr un mayor entendimiento de que son y como funcionan los cortes. Si bien en la materia los estudiamos a nivel teórico, es importante toparnos con ellos a nivel práctico e intentar implementarlos. Para esto, utilizaremos las desigualdades válidas clique y odd-hole.
+	Otro de los propósitos de este trabajo es lograr un mayor entendimiento de qué son y cómo funcionan los planos de corte. Si bien en la materia los estudiamos a nivel teórico, es importante toparnos con ellos a nivel práctico e intentar implementarlos. Para esto, utilizaremos las desigualdades válidas {\it clique} y {\it odd-hole}.
 
-	\item Comparación entre distintos métodos de resolución
+	\item {\bf Comparación entre distintos métodos de resolución:}
 	
 	La última meta será realizar una comparación entre algunos métodos de resolución general:
+	
 	\begin{itemize}
 	
-		\item Branch-and-Bound:
+		\item {\it Branch-and-Bound:}
 		
-		(Breve explicación de que es branch and bound(ALE)). Es la resolución automática de CPLEX, por lo que le quitaremos todo el preprocesamiento y cortes que este paquete le añade, con el fin de obtener un resultado basado solamente en Branch-and-Bound 
+		Esta técnica subdivide el problema sucesivamente en otros más pequeños, eliminando ciertas soluciones fraccionarias, y manteniendo durante el recorrido del árbol generado una cota superior y otra
+inferior para el óptimo buscado. Es la resolución automática de CPLEX, por lo que le quitaremos todo el preprocesamiento y cortes que este paquete le añade, con el fin de obtener un resultado basado solamente en Branch-and-Bound.
 		
-		\item Cut-and-Branch:
+		\item {\it Cut-and-Branch:}
 		
-		La idea es añadir cortes en el nodo raíz, para luego realizar un Branch-and-Bound clásico, que en teoría debería tomar menos tiempo dado que la formulación del PLE es más restrictiva. Sin embargo, dado que agregar un sinfin de restricciones también provoca una demora, un subobjetivo en esta etapa será encontrar una cantidad apropiada de cortes de manera que se acorte el branch and bound, pero que el preprocesamiento no tome demasiado(lo escribi como el orto(ALE)).
+		La idea es añadir cortes en el nodo raíz, para luego realizar un Branch-and-Bound clásico, que en teoría debería tomar menos tiempo dado que la formulación del PLEM es más restrictiva. Sin embargo, procesar un problema con demasiadas restricciones también puede empeorar la performance, por lo cual un subobjetivo en esta etapa será encontrar una cantidad apropiada de cortes a agregar, de manera que favorezca la resolución.
 	
 	\end{itemize}
 	
@@ -119,7 +122,7 @@ Los objetivos del trabajo son los siguientes:
 
 \section{Problema del Coloreo Particionado de Grafos}
 
-El problema de coloreo de grafos ha sido ampliamente estudiado y aparece en numerosas aplicaciones de la vida real, como por ejemplo en problemas de scheduling, asignación de frecuencias,secuenciamiento, etc. Formalmente, el problema puede ser definido de la siguiente forma: 
+El problema de coloreo de grafos ha sido ampliamente estudiado y aparece en numerosas aplicaciones de la vida real, como por ejemplo en problemas de scheduling, asignación de frecuencias, secuenciamiento, etc. Formalmente, el problema puede ser definido de la siguiente forma: 
 
 Dado un grafo $G = (V,E)$ con $n = |V|$ vértices y $m = |E|$ aristas, un coloreo de $G$ consiste en una asignación de colores o etiquetas a cada vértice $p\in V$ de forma tal que todo par de vértices $(p, q) \in E$ poseen colores distintos. El problema de coloreo de grafos consiste en encontrar un coloreo que utilice la menor cantidad posible de colores distintos.
 
