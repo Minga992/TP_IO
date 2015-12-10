@@ -376,13 +376,13 @@ Instancia & Cant Nodos & Densidad & Tam Partición\\
 
 \subsubsection{Planos de Corte}
 
-Hemos corrido un algoritmo de planos de corte utilizando las heurísticas de clique y odd-hole.  Se configuró para que se realicen 5 iteraciones de planos de corte, y en cada una se busque hasta 10 cortes de cada familia.
+Hemos corrido un algoritmo de planos de corte utilizando las heurísticas de clique y odd-hole.  Se configuró para que se realicen 5 iteraciones de planos de corte, y en cada una se busque hasta 10 cortes de cada familia.  El Cuadro \ref{tab:cortes} se muestra la evolución del valor objetivo en cada iteración.
 
-\begin{longtable}[!htb]
+%\begin{table}[!htb]
 \begin{center}
-\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\begin{longtable}{|c|c|c|c|c|c|c|c|}
 \hline
-Instancia&Corte&Sol 1&Sol 2&Sol 3&Sol 4&Sol 5&Sol\\
+Instancia&Corte&Rel 1&Rel 2&Rel 3&Rel 4&Rel 5&Opt\\
 \hline
 \hline
 10_2&clique&2(sol entera)&-&-&-&-&2\\
@@ -529,14 +529,48 @@ Instancia&Corte&Sol 1&Sol 2&Sol 3&Sol 4&Sol 5&Sol\\
 \cline{2-7}
 &ambos&0,333333&0,583333&0,9&1,13889&1,25&\\
 \hline
-\end{tabular}
-\end{center}
+\caption{Comparación de cortes}\label{tab:cortes}
 \end{longtable}
+\end{center}
+%\end{table}
 
 \subsubsection{Métodos de resolución}
+
+Cada instancia fue resuelta una vez con {\it Branch and Bound} y una vez con {\it Cut and Branch}. En el primer caso, se desactivaron todos los preprocesamientos que CPLEX realiza automáticamente, de manera de tener un {\it Branch and Bound} puro, y en el segundo se aplicaron los cortes clique y odd-hole sobre el nodo raíz (5 iteraciones de planos de corte, hasta 10 cortes de cada familia por iteración). 
+
+Se estableció un tiempo límite de ejecución de 15 minutos y se experimentó con distintas estrategias de recorrido del árbol de enumeración y de selección de la variable de branching, a saber:
+
+\begin{itemize}
+	\item {\it Recorrido:}
+	\begin{itemize}
+		\item Best Bound Search: Recorre el árbol eligiendo cada vez el nodo con la mejor función objetivo para la relajación lineal del problema.
+		\item Depth First Search: Recorre el árbol en profundidad, eligiendo cada vez el nodo más recientemente creado.
+	\end{itemize}
+	\item {\it Branching:}
+	\begin{itemize}
+		\item Minimum Infeasibility: Branchea sobre la variable con valor fraccionario más cercano a un entero.
+		\item Maximum Infeasibility: Branchea sobre la variable con valor fraccionario más lejano a un entero.
+	\end{itemize}
+\end{itemize}
+
+Las combinaciones utilizadas, entonces, fueron:
+
+\begin{itemize}
+	\item Branch and Bound con Best Bound Search y Minimum Infeasibility. (B\&B bb_min)
+	\item Cut and Branch con Best Bound Search y Minimum Infeasibility. (C\&B bb_min)
+	\item Branch and Bound con Best Bound Search y Maximum Infeasibility. (B\&B bb_max)
+	\item Cut and Branch con Best Bound Search y Maximum Infeasibility. (C\&B bb_max)
+	\item Branch and Bound con Depth First Search y Minimum Infeasibility. (B\&B dfs_min)
+	\item Cut and Branch con Depth First Search y Minimum Infeasibility. (C\&B dfs_min)
+	\item Branch and Bound con Depth First Search y Maximum Infeasibility. (B\&B dfs_max)
+	\item Cut and Branch con Depth First Search y Maximum Infeasibility. (C\&B dfs_max)
+\end{itemize}
+
+Los cuadros bla, ble y bli muestran en comparación los tiempos de ejecución, la cantidad de nodos recorridos y el valor objetivo de cada resolución.
 
 \newpage
 
 \section{Conclusiones y trabajo futuro} 
 
 \end{document}
+
