@@ -14,6 +14,7 @@
 \usepackage{listings} % necesario para el resaltado de sintaxis
 \usepackage{caption}
 \usepackage{placeins}
+\usepackage{longtable}
 
 \usepackage{hyperref} % agrega hipervínculos en cada entrada del índice
 \hypersetup{          % (en el pdf)
@@ -261,12 +262,278 @@ Sea $C_{2k+1}$ circuito impar $(k \geq 2)$ y $H$ subconjunto de nodos de $C_{2k+
 
 {\it Demostración:}
 
-Supongamos que no. O sea que existe un $H$ subconjunto de nodos de $C_{2k+1}$ tal que $|H| \geq k+1$ y tal que no existe $v,w \in H$ tal que $(v,w) \in E(C_{2k+1})$. Pero si esto es cierto, significa que el grafo inducido por $H$(no recuerdo si esta es la definición pero se entiende la idea, corregir(ALE)) es un grafo sin aristas. Eso significa que existen al menos $k+1$ nodos que pertenecen a $C_{2k+1}$ pero no a $H$. No se como cerrar la idea, pero esta ahiiii!!(ALE).
+Supongamos que no. O sea que existe un $H$ subconjunto de nodos de $C_{2k+1}$ tal que $|H| \geq k+1$ y tal que no existe $v,w \in H$ tal que $(v,w) \in E(C_{2k+1})$. Esto significa que el grafo inducido por $H$ es un grafo sin aristas.
 
+Ahora, a partir del subgrafo inducido por $H$, intentemos construir un circuito sin conectar a los elementos de $H$ entre sí y añadiendo la mínima cantidad de nodos extra. Para esto, basta con tomar alternadamente un elemento de $H$ y un elemento no perteneciente a $H$.  Para obtener un circuito, entonces, necesitamos al menos la misma cantidad de nodos extra como elementos existentes en $H$, y como $H$ tiene al menos $k+1$ elementos necesitaremos al menos $k+1$ vértices más.  Esto quiere decir que, para que el subgrafo inducido por $H$ no contenga aristas, el circuito al que pertenece debe tener longitud al menos $2k+2$. {\it ABSURDO}, pues el circuito al que pertenece $H$ tiene exactamente $2k+1$ elementos.
+
+El absurdo provino de suponer que el subgrafo inducido por $H$ no contenía aristas, por lo cual probamos que si $|H| \geq k+1$ entonces $\exists v,w \in H$ tal que $(v,w) \in E(C_{2k+1})$.
+
+\newpage
+
+\section{Algoritmos de separación}
+
+En esta sección explicaremos las heurísticas de separación implementadas para cada familia de desigualdades válidas. En ambos casos se utilizó una estrategia {\it Greedy} para generar los cortes en función de la solución obtenida en la relajación lineal del problema, tratando de encontrar cliques y agujeros impares que utilicen los nodos con mayor valor, ya que intuitivamente es más probable que la desigualdad hallada separe efectivamente a la solución de la relajación.
+
+\subsection{Cliques}
+
+Para cada color disponible con valor mayor a 0\footnote{Dado que los valores de las variables en este momento son continuas entre 0 y 1, y dada la aritmética finita de la computadora, las comparaciones se hacen con una tolerancia de $10^{-5}$.} en la solución de la relajación (o sea, para cada color ``usado''), empezando desde el de menor etiqueta hasta el de mayor etiqueta, se ordenan los nodos de mayor a menor según el valor que tienen en la solución de la relajación para el color fijado.  
+
+Entonces, se toma el nodo con mayor valor como nodo ``inicial'' y se busca el siguiente de mayor valor con el cual tenga una arista; luego se busca el siguiente nodo que se relacione con ambos, y así sucesivamente hasta recorrer todos los nodos.  El resultado es una clique maximal del grafo original, ya que si al revisar un nodo, éste no se conectaba con todos los incluidos en la clique hasta ese momento, el mismo era descartado; es decir, todo nodo que no pertenezca a la clique hallada no tiene arista con al menos uno de los elementos de la misma, así que la clique es maximal.
+
+Durante el armado de la clique se va acumulando la suma de los valores de los nodos en la solución de la relajación.  Si en algún momento del proceso se llega a considerar agregar a la clique un nodo con valor 0, esto significa que a partir de ese momento todos los nodos a considerar tendrán el mismo valor (porque estamos consultando los nodos de manera golosa).  Por lo tanto, a partir de ese momento el valor de la suma no se verá afectada, así que para evitar procesamiento innecesario se chequea que la suma obtenida hasta el momento supere el valor que tiene la variable $w_j$ para el $j$ que se fijó, de manera que la clique que se está armando efectivamente separe la solución hallada en la relajación.  De ser así, se continúa hasta hallar la clique maximal, si no, la clique se descarta y se prosigue con la siguiente.
+
+Una vez hallada una clique maximal, se busca como nodo ``inicial'' de la siguente al nodo de mayor valor que no haya sido utilizado en una clique anterior ni considerado como nodo ``inicial'' de una clique descartada.  A partir de ahí, se vuelven a recorrer los nodos de manera golosa armando la clique bajo el mismo criterio que antes. Este procedimiento se repite hasta que se encuentra la cantidad de cliques solicitada o hasta que todos los nodos fueron, o bien utilizados en una clique válida anterior, o bien considerados como nodo ``inicial'' de alguna clique, haya resultado válida o no. 
+
+\paragraph*{Observación:} Cuando esta heurística es utilizada en sucesivas iteraciones de un algoritmo de planos de corte, no es posible que en distintas iteraciones se encuentren cliques ``repetidas'', ya que si en alguna iteración una clique es considerada como corte, la solución de cualquier relajación lineal posterior al agregado de esa restricción ya la estará cumpliendo y, por lo tanto, no podrá ser propuesta como corte nuevamente. A su vez, por este motivo no se encuentran cliques de tamaño 1 ($K_1$) que separen, puesto que es lo mismo que la restricción $x_{ij} \leq w_j$ del PLEM y la solución de la relajación ya lo cumple.
+
+\subsection{Odd-holes}
+
+Al igual que con las cliques, para cada color disponible ``usado'' en la solución de la relajación, empezando desde el de menor etiqueta hasta el de mayor etiqueta, se ordenan los nodos de mayor a menor según el valor que tienen en la solución de la relajación para el color fijado.  
+
+Entonces, se toma el nodo con mayor valor como nodo ``inicial'' y se busca el siguiente de mayor valor con el cual tenga una arista; luego se busca el siguiente nodo que se relacione sólo con el último de los nodos elegidos hasta el momento, y así sucesivamente hasta que se recorren todos los nodos ó se encuentra un nodo que también cierre el circuito con el nodo ``inicial''.  Si se encuentra un nodo que cierra el circuito, se chequea que el agujero hallado tenga longitud impar mayor ó igual a 5, y de no ser así se descarta el último nodo y se continúa en busca de otro agujero que contenga a los anteriores seleccionados. En caso de que no se logre hallar dicho agujero, se descarta esta selección de nodos y se busca otro.
+
+Durante el armado del agujero se va acumulando la suma de los valores de los nodos en la solución de la relajación.  Si en algún momento del proceso se llega a considerar agregar al agujero un nodo con valor 0,  se chequea que la suma obtenida hasta el momento supere el valor que tiene la variable $w_j$ para el $j$ que se fijó, de manera que el agujero que se está armando efectivamente separe la solución hallada en la relajación.  De ser así, se continúa hasta hallar el agujero completo, si no, la selección se descarta y se prosigue con la siguiente.
+
+Una vez hallado un agujero impar de longitud apropiada, se busca como nodo ``inicial'' del siguente al nodo de mayor valor que no haya sido utilizado en un agujero anterior ni considerado como nodo ``inicial'' de una selección descartada.  A partir de ahí, se vuelven a recorrer los nodos de manera golosa armando el agujero bajo el mismo criterio que antes. Este procedimiento se repite hasta que se encuentra la cantidad de agujeros solicitada o hasta que todos los nodos fueron, o bien utilizados en un agujero válido anterior, o bien considerados como nodo ``inicial'' de algún agujero, haya resultado válido o no. 
+
+\paragraph*{Observación: } Para asegurarnos de que la búsqueda de agujeros tiene sentido, antes de que se comience a ejecutar el algoritmo de planos de corte se hace una ``poda'' del grafo de la siguiente manera: se quitan los nodos de grado 1, se actualiza el grado de los nodos restantes y se repite hasta que no haya más hojas.  Esto quita las ``ramas colgantes'' del grafo que no llevarían a ningún agujero (en particular, era un árbol). Si el grafo resultante de esta poda es vacío, significa que no existían agueros en el grafo original, así que en ese caso el algoritmo de planos de corte no utiliza la heurística de agujero impar. Si bien en caso de que el grafo podado no sea vacío no significa que contenga agujeros, al utilizar esta heurística sobre el grafo podado se reduce la cantidad de opciones a chequear.
 
 \newpage
 
 \section{Experimentación}
+
+A continuación presentaremos las pruebas realizadas, las instancias utilizadas y los resultados obtenidos.
+
+La experimentación consta de dos partes: una enfocada en evaluar las familias de desigualdades válidas utilizadas como cortes y una enfocada en comparar la resolución mediante Branch and Bound contra la resolución mediante Cut and Branch.
+
+Todas las corridas se realizaron sobre una CPU Intel Core i3 de 4 núcleos a 2,20 GHZ con 4GB RAM, utilizando la versión 12.6 de CPLEX.
+
+\subsection{Instancias de prueba}
+
+%La idea original del trabajo era incluir en las corridas pertinentes algunas instancias DIMAC, pero dado el tamaño de las mismas se decidió trabajar sólo sobre instancias propias con tamaños manejables por los algoritmos utilizados, con el objetivo de poder visualizar en un tiempo razonable las diferencias entre las diferentes opciones.
+
+Hemos generado un set de instancias aleatorias con distintas cantidades de nodos, densidades de aristas y tamaño de partición. En el Cuadro \ref{tab:instancias} se muestra la información de las mismas.
+
+\begin{table}[!htb]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Instancia & Cant Nodos & Densidad & Tam Partición\\
+\hline
+10_2		& 10		& 20\%	& 10\\
+\hline
+10_4		& 10		& 40\% 	& 10\\
+\hline
+10_6		& 10		& 60\% 	& 10\\
+\hline
+10_8		& 10		& 80\% 	& 10\\
+\hline
+20_2		& 20		& 20\% 	& 20\\
+\hline
+20_4		& 20		& 40\% 	& 20\\
+\hline
+20_6		& 20		& 60\% 	& 20\\
+\hline
+20_8		& 20		& 80\% 	& 20\\
+\hline
+30_2_30	& 30		& 20\% 	& 30\\
+\hline
+30_4_30	& 30		& 40\% 	& 30\\
+\hline
+30_6_30	& 30		& 60\% 	& 30\\
+\hline
+30_8_30	& 30		& 80\% 	& 30\\
+\hline
+30_2_15	& 30		& 20\% 	& 15\\
+\hline
+30_4_15	& 30		& 40\% 	& 15\\
+\hline
+30_6_15	& 30		& 60\% 	& 15\\
+\hline
+30_8_15	& 30		& 80\% 	& 15\\
+\hline
+30_2_10	& 30		& 20\% 	& 10\\
+\hline
+30_4_10	& 30		& 40\% 	& 10\\
+\hline
+30_6_10	& 30		& 60\% 	& 10\\
+\hline
+30_8_10	& 30		& 80\% 	& 10\\
+\hline
+30_2_5	& 30		& 20\% 	& 5\\
+\hline
+30_4_5	& 30		& 40\% 	& 5\\
+\hline
+30_6_5	& 30		& 60\% 	& 5\\
+\hline
+30_8_5	& 30		& 80\% 	& 5\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Información de las instancias}\label{tab:instancias}
+\end{table}
+\subsection{Resultados}
+
+\subsubsection{Planos de Corte}
+
+Hemos corrido un algoritmo de planos de corte utilizando las heurísticas de clique y odd-hole.  Se configuró para que se realicen 5 iteraciones de planos de corte, y en cada una se busque hasta 10 cortes de cada familia.
+
+\begin{longtable}[!htb]
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+Instancia&Corte&Sol 1&Sol 2&Sol 3&Sol 4&Sol 5&Sol\\
+\hline
+\hline
+10_2&clique&2(sol entera)&-&-&-&-&2\\
+\cline{2-7}
+&agujero&2&-&-&-&-&\\
+\cline{2-7}
+&ambos&2(sol entera)&-&-&-&-&\\
+\hline
+10_4&clique&2&2,5&3&3&-&3\\
+\cline{2-7}
+&agujero&2,33333&2,42857&2,5&2,5&2,5&\\
+\cline{2-7}
+&ambos&2,5&2,66667&3&3&3&\\
+\hline
+10_6&clique&4(sol entera)&-&-&-&-&4\\
+\cline{2-7}
+&agujero&2&2,6&3&3,36364&3,36364&\\
+\cline{2-7}
+&ambos&4(sol entera)&-&-&-&-&\\
+\hline
+10_8&clique&5&5&6(sol entera)&-&-&6\\
+\cline{2-7}
+&agujero&4&-&-&-&-&\\
+\cline{2-7}
+&ambos&5&6(sol entera)&-&-&-&\\
+\hline
+20_2&clique&2&2&2,14286&2,28571&2,38095&4\\
+\cline{2-7}
+&agujero&2&2&2,09063&2,2125&2,25949&\\
+\cline{2-7}
+&ambos&2&2,26316&2,44&2,66667&3&\\
+\hline
+20_4&clique&2&2,25&2,5&2,66667&3&5\\
+\cline{2-7}
+&agujero&3&3,05&3,16667&3,21739&3,21739&\\
+\cline{2-7}
+&ambos&2&2,2&2,38462&2,4&2,4&\\
+\hline
+20_6&clique&2&2,5&3&3,5&4&8\\
+\cline{2-7}
+&agujero&3&3&3,16667&3,2&3,3&\\
+\cline{2-7}
+&ambos&4&4,10714&4,25&4,43704&4,475&\\
+\hline
+20_8&clique&2&2,91667&3&3,9&4,33333&9\\
+\cline{2-7}
+&agujero&2&2&2,33333&2,5&2,5&\\
+\cline{2-7}
+&ambos&5&5,38462&5,80303&6,08929&6,43636&\\
+\hline
+30_2_30&clique&2&2&2,2&2,2&2,44444&4\\
+\cline{2-7}
+&agujero&2&2,33333&2,38095&2,66667&2,75&\\
+\cline{2-7}
+&ambos&2&2,5&2,5&2,625&3&\\
+\hline
+30_4_30&clique&2&2,33333&2,5&2,5&3&6\\
+\cline{2-7}
+&agujero&2&2,25&2,25&2,33333&2,375&\\
+\cline{2-7}
+&ambos&2&2,5&2,5&3&3&\\
+\hline
+30_6_30&clique&2&2,5&2,5&3&3&?\\
+\cline{2-7}
+&agujero&2&2,11111&2,11111&2,125&2,16667&\\
+\cline{2-7}
+&ambos&3&3,2&3,2&3,27273&3,33333&\\
+\hline
+30_8_30&clique&6&6,5&6,5&7,5&8,5&?\\
+\cline{2-7}
+&agujero&4&4,4&4,5&4,5&4,6&\\
+\cline{2-7}
+&ambos&3&3,5&3,8&4,25&4,5&\\
+\hline
+30_2_15&clique&1&1,5&1,6&2&2&3\\
+\cline{2-7}
+&agujero&1&1&1,07692&1,12821&1,21053&\\
+\cline{2-7}
+&ambos&2&2&2&2&2&\\
+\hline
+30_4_15&clique&2&2&2&2&2&3\\
+\cline{2-7}
+&agujero&1&1,07143&1,15&1,1875&1,33333&\\
+\cline{2-7}
+&ambos&2,125&2,14634&2,22222&2,23529&2,28571&\\
+\hline
+30_6_15&clique&2&2,16667&2,16667&2,22222&2,66667&5\\
+\cline{2-7}
+&agujero&1&1,16667&1,25&1,27273&1,27778&\\
+\cline{2-7}
+&ambos&3&3,5&3,5&3,5&3,5&\\
+\hline
+30_8_15&clique&2&3&3,5&4&4&6\\
+\cline{2-7}
+&agujero&1&1,16667&1,33333&1,33333&1,33333&\\
+\cline{2-7}
+&ambos&3&3,07692&3,07692&3,33333&3,5&\\
+\hline
+30_2_10&clique&0,5&0,75&0,857143&0,894737&0,914798&2\\
+\cline{2-7}
+&agujero&1&1,125&1,16667&1,28&1,29167&\\
+\cline{2-7}
+&ambos&1&1,11111&1,17143&1,25&1,33333&\\
+\hline
+30_4_10&clique&0,5&0,75&0,823529&0,875&0,97619&2\\
+\cline{2-7}
+&agujero&1&1&1,05882&1,15152&1,15152&\\
+\cline{2-7}
+&ambos&1&1,25&1,33333&1,33333&1,33333&\\
+\hline
+30_6_10&clique&0,5&1&1,33333&1,4&1,5&3\\
+\cline{2-7}
+&agujero&1&1&1&1,125&1,3&\\
+\cline{2-7}
+&ambos&1&1,5&1,5&1,5122&1,54545&\\
+\hline
+30_8_10&clique&0,5&1,5&1,71429&1,75&1,875&4\\
+\cline{2-7}
+&agujero&1&1&1,125&1,125&1,125&\\
+\cline{2-7}
+&ambos&1&1,5&1,75&1,96296&2&\\
+\hline
+30_2_5&clique&0,5&0,5&0,5&0,5&-&1\\
+\cline{2-7}
+&agujero&0,33333&0,33333&0,33333&0,350515&0,388889&\\
+\cline{2-7}
+&ambos&0,333333&0,333333&0,363636&0,405882&0,440945&\\
+\hline
+30_4_5&clique&0,5&0,66667&1&1&1&1\\
+\cline{2-7}
+&agujero&0,333333&0,375&0,448718&0,472362&0,490862&\\
+\cline{2-7}
+&ambos&0,333333&0,352941&0,5&0,538462&0,581081&\\
+\hline
+30_6_5&clique&0,5&0,5&0,615385&0,639535&0,767857&2\\
+\cline{2-7}
+&agujero&0,333333&0,4&0,473684&0,486322&0,503571&\\
+\cline{2-7}
+&ambos&0,333333&0,466667&0,75&0,806349&0,820189&\\
+\hline
+30_8_5&clique&0,5&0,8&1,1828&1,21605&1,22222&2\\
+\cline{2-7}
+&agujero&0,333333&0,363636&0,4&0,428571&0,5&\\
+\cline{2-7}
+&ambos&0,333333&0,583333&0,9&1,13889&1,25&\\
+\hline
+\end{tabular}
+\end{center}
+\end{longtable}
+
+\subsubsection{Métodos de resolución}
 
 \newpage
 
