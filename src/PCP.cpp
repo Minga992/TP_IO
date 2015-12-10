@@ -266,7 +266,7 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 	
 	// Setea el tiempo limite de ejecucion.
-	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 300);
+	status = CPXsetdblparam(env, CPX_PARAM_TILIM, 900);
 
 	if (status) {
 		cerr << "Problema seteando el tiempo limite" << endl;
@@ -326,12 +326,14 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	/******************************************************************/
 	//~ cout << "planos de corte" << endl;
 	double inittime, endtime;
-	std::string outputfile2(argv[5]);
-	ofstream solfile2(outputfile2.c_str());
+	//~ std::string outputfile2(argv[5]);
+	//~ ofstream solfile2(outputfile2.c_str(),std::ofstream::out | std::ofstream::app);
+	//~ solfile2 << argv[1] << endl;
 	clock_t start,end;
 	start = clock();
 	for (int h = 0; h < cant_iter_cortes; h++)	// cant_iter_cortes se levanta de argv - ver donde va
 	{
+		//~ solfile2 << "Iteracion " << h << ": " << endl;
 		// resuelvo el lp (relajacion lineal)
 		cout << "resuelvo relajacion " << h << endl;
 		// Tomamos el tiempo de resolucion utilizando CPXgettime.
@@ -387,13 +389,13 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		// Tomamos los valores de la solucion y los escribimos a un archivo.
 		//~ std::string outputfile = "pcp.sol";
 		//~ ofstream solfile(outputfile.c_str());
-		solfile2 << "Status de la solucion: " << statstr << endl;
-		solfile2 << "valor de la fo: " << objval << endl;
-		for (int j = 0; j < n; j++) {
-			if (sol[j] > TOL) {
-				solfile2 << "x_" << j << " = " << sol[j] << endl;
-			}
-		}
+		//~ solfile2 << "Status de la solucion: " << statstr << endl;
+		//~ solfile2 << "valor de la fo: " << objval << endl;
+		//~ for (int j = 0; j < n; j++) {
+			//~ if (sol[j] > TOL) {
+				//~ solfile2 << "x_" << j << " = " << sol[j] << endl;
+			//~ }
+		//~ }
 
 		//~ solfile.close();
 		//~ }
@@ -408,7 +410,9 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 				break;
 			}
 		}
-		if(sol_int) { break; }
+		if(sol_int) { 
+			//~ solfile2 << "¡SOL ENTERA!" << endl;
+			break; }
 		
 		// si no, empiezo a cortar		
 		vector< vector<int> > cortes_clique;
@@ -498,8 +502,8 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		delete[] sol;
 	}
 	end = clock();
-	solfile2 << "ESTO ES LO QUE TARDE: " << difftime(end,start) << endl;
-	solfile2.close();
+	//~ solfile2 << "ESTO ES LO QUE TARDE: " << difftime(end,start) << endl << endl;
+	//~ solfile2.close();
 
 	for (int h = 0; h < cant_vert; h++)
 	{
@@ -601,7 +605,20 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		cerr << "Problema configurando CPX_PARAM_LANDPCUTS" << endl;
 		exit(1);
 	}
-
+	
+	// Recorrido del arbol
+	status = CPXsetintparam(env, CPX_PARAM_NODESEL, 1);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_NODESEL" << endl;
+		exit(1);
+	}
+	
+	// Selección de variable de branching
+	status = CPXsetintparam(env, CPX_PARAM_VARSEL, -1);
+	if (status) {
+		cerr << "Problema configurando CPX_PARAM_VARSEL" << endl;
+		exit(1);
+	}
 	
 	/******************************************************************/
 	/*******************          HAGO B&B         ********************/
@@ -627,7 +644,16 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		cerr << "Problema optimizando CPLEX" << endl;
 		exit(1);
 	}
-
+	
+	std::string outputfile(argv[5]);
+	ofstream solfile(outputfile.c_str(),std::ofstream::out | std::ofstream::app);
+	solfile << argv[1] << " " << cant_part << endl;
+	if(cant_iter_cortes == 0)
+	{
+		solfile << "Branch and Bound" << endl;
+	}else{
+		solfile << "Cut and Branch" << endl;
+	}
 	// Chequeamos el estado de la solucion.
 	int solstat;
 	char statstring[510];
@@ -637,6 +663,12 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	string statstr(statstring);
 	cout << endl << "Resultado de la optimizacion: " << statstring << endl;
 	if(solstat!=CPXMIP_OPTIMAL){
+		double objval;
+		status = CPXgetobjval(env, lp, &objval);
+		int nodecnt = CPXgetnodecnt(env,lp);
+		solfile << "Valor objetivo: " << objval << endl;
+		solfile << "Cantidad de nodos: " << nodecnt << endl;
+		solfile << "Status de la solucion: " << statstr << endl;
 		exit(1);
 	}  
     
@@ -647,13 +679,25 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 		cerr << "Problema obteniendo valor de mejor solucion." << endl;
 		exit(1);
 	}
+	
+    int nodecnt = CPXgetnodecnt(env,lp);
     
-	cout << "Datos de la resolucion: " << "\t" << objval << "\t" << (endtime - inittime) << endl; 
+	cout << "Datos de la resolucion: " << "\t" << objval << "\t" << nodecnt << "\t" << (endtime - inittime) << endl; 
 
 	// Tomamos los valores de la solucion y los escribimos a un archivo.
-	std::string outputfile = "pcpmip.sol";
-	ofstream solfile(outputfile.c_str());
-
+	//~ std::string outputfile = "pcpmip.sol";
+	//~ std::string outputfile(argv[5]);
+	//~ ofstream solfile(outputfile.c_str(),std::ofstream::out | std::ofstream::app);
+	//~ solfile << argv[1] << endl;
+	//~ if(cant_iter_cortes == 0)
+	//~ {
+		//~ solfile << "Branch and Bound" << endl;
+	//~ }else{
+		//~ solfile << "Cut and Branch" << endl;
+	//~ }
+	solfile << "Valor objetivo: " << objval << endl;
+	solfile << "Cantidad de nodos: " << nodecnt << endl;
+	solfile << "Tiempo: " << (endtime-inittime) << endl;
 
 	// Tomamos los valores de todas las variables. Estan numeradas de 0 a n-1.
 	double *sol = new double[n];
@@ -666,11 +710,11 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 
 	// Solo escribimos las variables distintas de cero (tolerancia, 1E-05).
 	solfile << "Status de la solucion: " << statstr << endl;
-	for (int i = 0; i < n; i++) {
-		if (sol[i] > TOL) {
-			solfile << "x_" << i << " = " << sol[i] << endl;
-		}
-	}
+	//~ for (int i = 0; i < n; i++) {
+		//~ if (sol[i] > TOL) {
+			//~ solfile << "x_" << i << " = " << sol[i] << endl;
+		//~ }
+	//~ }
 
   
 	delete [] sol;

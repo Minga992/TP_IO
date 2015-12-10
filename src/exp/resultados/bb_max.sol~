@@ -1,0 +1,258 @@
+exp/inst_10_2
+Branch and Bound
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.00784397
+Status de la solucion: integer optimal solution
+exp/inst_10_2
+Cut and Branch
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.00377202
+Status de la solucion: integer optimal solution
+exp/inst_10_4
+Branch and Bound
+Valor objetivo: 3
+Cantidad de nodos: 0
+Tiempo: 0.00507998
+Status de la solucion: integer optimal solution
+exp/inst_10_4
+Cut and Branch
+Valor objetivo: 3
+Cantidad de nodos: 0
+Tiempo: 0.00317883
+Status de la solucion: integer optimal solution
+exp/inst_10_6
+Branch and Bound
+Valor objetivo: 4
+Cantidad de nodos: 0
+Tiempo: 0.00512791
+Status de la solucion: integer optimal solution
+exp/inst_10_6
+Cut and Branch
+Valor objetivo: 4
+Cantidad de nodos: 0
+Tiempo: 0.00373411
+Status de la solucion: integer optimal solution
+exp/inst_10_8
+Branch and Bound
+Valor objetivo: 6
+Cantidad de nodos: 0
+Tiempo: 0.00998902
+Status de la solucion: integer optimal solution
+exp/inst_10_8
+Cut and Branch
+Valor objetivo: 6
+Cantidad de nodos: 0
+Tiempo: 0.003829
+Status de la solucion: integer optimal solution
+exp/inst_20_2
+Branch and Bound
+Valor objetivo: 4
+Cantidad de nodos: 7
+Tiempo: 0.026387
+Status de la solucion: integer optimal solution
+exp/inst_20_2
+Cut and Branch
+Valor objetivo: 4
+Cantidad de nodos: 0
+Tiempo: 0.0280669
+Status de la solucion: integer optimal solution
+exp/inst_20_4
+Branch and Bound
+Valor objetivo: 5
+Cantidad de nodos: 262
+Tiempo: 0.162116
+Status de la solucion: integer optimal solution
+exp/inst_20_4
+Cut and Branch
+Valor objetivo: 5
+Cantidad de nodos: 0
+Tiempo: 0.053056
+Status de la solucion: integer optimal solution
+exp/inst_20_6
+Branch and Bound
+Valor objetivo: 8
+Cantidad de nodos: 14606
+Tiempo: 7.91918
+Status de la solucion: integer optimal solution
+exp/inst_20_6
+Cut and Branch
+Valor objetivo: 8
+Cantidad de nodos: 50729
+Tiempo: 42.5035
+Status de la solucion: integer optimal solution
+exp/inst_20_8
+Branch and Bound
+Valor objetivo: 9
+Cantidad de nodos: 2896
+Tiempo: 1.80254
+Status de la solucion: integer optimal solution
+exp/inst_20_8
+Cut and Branch
+Valor objetivo: 9
+Cantidad de nodos: 22205
+Tiempo: 23.6802
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Branch and Bound
+Valor objetivo: 4
+Cantidad de nodos: 4
+Tiempo: 0.084687
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Cut and Branch
+Valor objetivo: 4
+Cantidad de nodos: 90
+Tiempo: 0.39159
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Cut and Branch
+Valor objetivo: 6
+Cantidad de nodos: 33432
+Tiempo: 97.3735
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Branch and Bound
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0521181
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Cut and Branch
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.034884
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Branch and Bound
+Valor objetivo: 3
+Cantidad de nodos: 0
+Tiempo: 0.0896091
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Cut and Branch
+Valor objetivo: 3
+Cantidad de nodos: 0
+Tiempo: 0.14811
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Branch and Bound
+Valor objetivo: 4
+Cantidad de nodos: 157
+Tiempo: 0.591375
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Cut and Branch
+Valor objetivo: 4
+Cantidad de nodos: 17
+Tiempo: 0.383934
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Branch and Bound
+Valor objetivo: 7
+Cantidad de nodos: 12758
+Tiempo: 36.6546
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Cut and Branch
+Valor objetivo: 6
+Cantidad de nodos: 1728
+Tiempo: 7.78393
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Branch and Bound
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0248728
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Cut and Branch
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0224092
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Branch and Bound
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0401969
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Cut and Branch
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0427639
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Branch and Bound
+Valor objetivo: 3
+Cantidad de nodos: 35
+Tiempo: 0.175717
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Cut and Branch
+Valor objetivo: 3
+Cantidad de nodos: 25
+Tiempo: 0.287498
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Branch and Bound
+Valor objetivo: 4
+Cantidad de nodos: 488
+Tiempo: 1.38252
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Cut and Branch
+Valor objetivo: 4
+Cantidad de nodos: 27
+Tiempo: 0.410466
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Branch and Bound
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.0110221
+Status de la solucion: integer optimal solution
+exp/inst_30_2
+Cut and Branch
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.0101562
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Branch and Bound
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.018995
+Status de la solucion: integer optimal solution
+exp/inst_30_4
+Cut and Branch
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.0291259
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Branch and Bound
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.0382769
+Status de la solucion: integer optimal solution
+exp/inst_30_6
+Cut and Branch
+Valor objetivo: 1
+Cantidad de nodos: 0
+Tiempo: 0.0158379
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Branch and Bound
+Valor objetivo: 2
+Cantidad de nodos: 5
+Tiempo: 0.0584269
+Status de la solucion: integer optimal solution
+exp/inst_30_8
+Cut and Branch
+Valor objetivo: 2
+Cantidad de nodos: 0
+Tiempo: 0.0783279
+Status de la solucion: integer optimal solution
