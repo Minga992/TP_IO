@@ -607,14 +607,14 @@ int main(int argc, char **argv) {	// se le pasa el archivo y la cantidad de conj
 	}
 	
 	// Recorrido del arbol
-	status = CPXsetintparam(env, CPX_PARAM_NODESEL, 1);
+	status = CPXsetintparam(env, CPX_PARAM_NODESEL, 0);
 	if (status) {
 		cerr << "Problema configurando CPX_PARAM_NODESEL" << endl;
 		exit(1);
 	}
 	
 	// Selección de variable de branching
-	status = CPXsetintparam(env, CPX_PARAM_VARSEL, -1);
+	status = CPXsetintparam(env, CPX_PARAM_VARSEL, 1);
 	if (status) {
 		cerr << "Problema configurando CPX_PARAM_VARSEL" << endl;
 		exit(1);
