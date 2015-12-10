@@ -132,65 +132,66 @@ A partir de diferentes aplicaciones, surgieron variaciones o generalizaciones de
 
 \section{Modelado del problema}
 
+Sea un grafo $G = (V,E)$, con $n = |V|$.  Definimos las siguientes variables binarias:
 
-Variables:
+\begin{itemize}
+	\item Para $i = 1,...,n, j = 1,...,n$	
+	\begin{equation*}
+	x_{ij} = \begin{cases}
+				1 & \mbox{si el nodo }i\mbox{ es pintado con el color }j\\
+				0 & \mbox{caso contrario}
+			\end{cases}
+	\end{equation*}
+	
+	\item Para $j = 1,..,n$
+	\begin{equation*}
+	w_j = \begin{cases}
+			1 & \mbox{si algun nodo es pintado con el color }j\\
+			0 & \mbox{caso contrario}
+		\end{cases}
+	\end{equation*}
+\end{itemize}
 
-$G$ : Grafo
+Sea $C$ el conjunto de colores posibles de utilizar.  Buscamos minimizar la cantidad de colores distintos usados:
 
-$V$ : Conjunto de los vértices del $G$
-
-$E$ : Conjunto de las aristas de $G$
-
-$C$ : Conjunto de colores
-
-$P$ : Conjuntos de vértices agrupados según la partición
-
-$x_{ij}$ : es verdadera sii el vértice $i$ es coloreado con el color $j$
-
-$w_j$ :es verdadera sii el color $j$ fue usado
-
-PLEM:
-
-\begin{tabbing}
-
-\hspace*{4cm} \= \hspace*{4cm} \kill
-
-$Min$ $ \sum_{j\in C} w_j$ \> \\
-
-Sujeto a:\> \\
-
-$x_{ij} - w_j$ $\leq$ $0$\>   $\forall j \in C$, $\forall i \in V$\\
-
-$x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$ \>  $\forall j \in C$, $\forall (i,k) \in E$\\
-
-$\sum_{x_i \in P} \sum_{j \in C} x_{ij}$ $=$ $1$ \> $\forall i \in V$, $\forall p \in P$\\
-
-$w_j$ $-$ $w_{j+1}$ $\geq$ $0$\> \\
-
-$x_{ij}$ $=$ $0$ \> \\
-
-\end{tabbing}
-
-$Min$ $ \sum_{j\in C} w_j$
+\begin{equation*}
+min \sum_{j\in C} w_j
+\end{equation*}
 
 Sujeto a:
 
-$x_{ij} - w_j$ $\leq$ $0$   $\forall j \in C$, $\forall i \in V$
-
-$x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
-
-$\sum_{x_i \in P} \sum_{j \in C} x_{ij}$ $=$ $1$  $\forall i \in V$, $\forall p \in P$
-
-$w_j$ $-$ $w_{j+1}$ $\geq$ $0$
-
-$x_{ij}$ $=$ $0$
-
+\begin{itemize}
+	\item La variable $w_j$ es verdadera sii algún vértice usa el color j:
+	\begin{equation*}
+	x_{ij} \leq w_j \quad \forall j \in C, \forall i \in V
+	\end{equation*}
+	
+	\item Dos vecinos no pueden usar el mismo color:
+	\begin{equation*}
+	x_{ij}+x_{kj} \leq 1 \quad \forall j \in C, \forall (i,k) \in E
+	\end{equation*}
+	
+	\item Cada conjunto $p$ de la partición $P$ tiene exactamente un color asignado:
+	\begin{equation*}
+	\sum_{x_i \in p} \sum_{j \in C} x_{ij} = 1 \quad \forall i \in V, p \in P
+	\end{equation*}
+	
+	\item No se permite usar un color hasta que no se hayan usado todos los anteriores:
+	\begin{equation*}
+	w_j \geq w_{j+1} \quad \forall 1 \leq j < |C|
+	\end{equation*}
+	
+	\item Ninguna partición puede estar coloreada con un color de etiqueta mayor a su índice:
+	\begin{equation*}
+	x_{ij} = 0 \quad \forall j > p(i)+1
+	\end{equation*}
+\end{itemize}
 
 \newpage
 
-\section{Código}
+\section{Desigualdades válidas}
 
-ESTO NO VA ACA, pero voy tirando la demo. Después hay que acomodarlo:
+A continuación presentaremos dos familias desigualdades y demostraremos que son válidas para el problema de coloreo particionado.
 
 \paragraph{Desigualdad Clique:} Sea $j_0$ $\in$ $ \{ 1,...,n \} $ y sea $K$ una clique maximal de $G$. La desigualdad clique está definida por:
 
@@ -198,19 +199,18 @@ ESTO NO VA ACA, pero voy tirando la demo. Después hay que acomodarlo:
 \sum_{p \in K} x_{pj_0} \leq w_{j_0}
 \end{equation}
 
-Demo:
+{\it Demostración:}
 
-Queremos ver que es desigualdad válida. O sea, que se cumple (\ref{eq:des1}) $\forall$ solución factible.
+Queremos ver que es desigualdad válida.  Es decir, que toda solución factible del PLEM planteado cumple (\ref{eq:des1}).
 
-Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
+Supongamos que no, o sea que $\exists s$ solución factible tal que:
 
 \begin{equation*}
 \sum_{p \in K} x_{pj_0} > w_{j_0}
 \end{equation*}
 
 \begin{itemize}
-
-	\item Si $w_{j_0} = 0$, ABSURDO, porque no cumple con la restricción $x_{ij} - w_j$ $\leq$ $0$.
+	\item Si $w_{j_0} = 0$, no cumple con la restricción $x_{ij} \leq w_j$: {\it ABSURDO}.
 	
 	\item Si $w_{j_0} = 1$ entonces
 	
@@ -218,24 +218,23 @@ Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
 	\sum_{p \in K} x_{pj_0} > 1
 	\end{equation*}
 
-	O sea que hay al menos dos nodos en $K$ con color $j_0$, lo que significa que $\exists$ $i,h \in K$ tal que $x_{ij_0} =1$ y $x_{hj_0} =1$.
-	ABSURDO, puesto que al $K$ ser clique, $(i,h) \in X$ y no se cumple la restricción $x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+	O sea que hay al menos dos nodos en $K$ con color $j_0$, lo que significa que $\exists i,h \in K$ tal que $x_{ij_0} = 1$ y $x_{hj_0} =1$.  Pero como $K$ es una clique, $(i,h) \in E$, así que no se cumple la restricción $x_{ij} + x_{kj} \leq 1 \quad \forall j \in C,\forall (i,k) \in E$: {\it ABSURDO}.
 \end{itemize}
 
-Estos absurdos provienen de suponer que existe $s$, por lo que la desigualdad válida es correcta.
+Estos absurdos provienen de suponer que existe $s$ solución factible que no cumple con la desigualdad de clique.  Por lo tanto, la desigualdad resulta válida para toda solución factible del PLEM.
 
 
-\paragraph{Desigualdad Odd-hole:} Sea $j_0$ $\in$ $ \{ 1,...,n \} $ y sea $C_{2k+1} = v_1 ,..., v_{2k+1}$, $k \geq 2$ , un agujero de longitud impar. La desigualdad odd-hole está definida por:
+\paragraph{Desigualdad Odd-hole:} Sea $j_0 \in \{ 1,...,n \}$ y sea $C_{2k+1} = v_1 ,..., v_{2k+1}, k \geq 2$, un agujero de longitud impar. La desigualdad odd-hole está definida por:
 
 \begin{equation} \label{eq:des2}
 \sum_{p \in C_{2k+1}} x_{pj_0} \leq kw_{j_0}
 \end{equation}
 
-Demo:
+{\it Demostración:}
 
-Queremos ver que es desigualdad válida. O sea, que se cumple (\ref{eq:des2}) $\forall$ solución factible.
+Queremos ver que es desigualdad válida.   Es decir, que toda solución factible del PLEM planteado cumple (\ref{eq:des2}).
 
-Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
+Supongamos que no, o sea que $\exists s$ solución factible tal que:
 
 \begin{equation*}
 \sum_{p \in C_{2k+1}} x_{pj_0} > kw_{j_0}
@@ -243,7 +242,7 @@ Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
 
 \begin{itemize}
 
-	\item Si $w_{j_0} = 0$, ABSURDO, porque no cumple con la restricción $x_{ij} - w_j$ $\leq$ $0$.
+	\item Si $w_{j_0} = 0$, no cumple con la restricción $x_{ij} - w_j \leq 0$: {\it ABSURDO}.
 	
 	\item Si $w_{j_0} = 1$ entonces
 	
@@ -251,19 +250,18 @@ Supongamos que no, o sea que $\exists$ $s$ solución factible tal que:
 	\sum_{p \in C_{2k+1}} x_{pj_0} > k
 	\end{equation*}
 
-	O sea que hay al menos $k+1$ nodos en $C_{2k+1}$ con color $j_0$, lo que significa que por LEMA $\exists$ $i,h \in C_{2k+1}$ tal que $x_{ij_0} =1$ y $x_{hj_0} =1$ con $(i,h) \in X$.
-	ABSURDO, pues no se cumple la restricción $x_{ij}$ $+$ $x_{kj}$ $\leq$ $1$   $\forall j \in C$, $\forall (i,k) \in E$
+	O sea que hay al menos $k+1$ nodos en $C_{2k+1}$ con color $j_0$. Por el {\bf Lema 1}, esto significa que $\exists i,h \in C_{2k+1}$ tal que $x_{ij_0} =1$ y $x_{hj_0} =1$ con $(i,h) \in E$. Pero esto no cumple la restricción $x_{ij} + x_{kj} \leq 1 \quad \forall j \in C,\forall (i,k) \in E$: {\it ABSURDO}.
 \end{itemize}
 
-Estos absurdos provienen de suponer que existe $s$, por lo que la desigualdad válida es correcta.
+Estos absurdos provienen de suponer que existe $s$ solución factible que no cumple con la desigualdad de agujero impar.  Por lo tanto, la desigualdad resulta válida para toda solución factible del PLEM.
 
-LEMA1:
+\paragraph{Lema 1:}
 
-Sea $C_{2k+1}$ circuito impar $(k\geq 2)$ y $H$ subconjunto de nodos de $C_{2k+1}$ tal que $\# H \geq k+1$ entonces $\exists v,w \in H$ tal que $(v,w) \in X(C_{2k+1})$.
+Sea $C_{2k+1}$ circuito impar $(k \geq 2)$ y $H$ subconjunto de nodos de $C_{2k+1}$ tal que $|H| \geq k+1$. Entonces $\exists v,w \in H$ tal que $(v,w) \in E(C_{2k+1})$.
 
-Demo:
+{\it Demostración:}
 
-Supongamos que no. O sea que existe un $H$ subconjunto de nodos de $C_{2k+1}$ tal que $\# H \geq k+1$ pero sin embargo no existe $v,w \in H$ tal que $(v,w) \in X(C_{2k+1})$. Pero si esto es cierto, significa que el grafo inducido por $H$(no recuerdo si esta es la definición pero se entiende la idea, corregir(ALE)) es un grafo sin aristas. Eso significa que existen al menos $k+1$ nodos que pertenecen a $C_{2k+1}$ pero no a $H$. No se como cerrar la idea, pero esta ahiiii!!(ALE).
+Supongamos que no. O sea que existe un $H$ subconjunto de nodos de $C_{2k+1}$ tal que $|H| \geq k+1$ y tal que no existe $v,w \in H$ tal que $(v,w) \in E(C_{2k+1})$. Pero si esto es cierto, significa que el grafo inducido por $H$(no recuerdo si esta es la definición pero se entiende la idea, corregir(ALE)) es un grafo sin aristas. Eso significa que existen al menos $k+1$ nodos que pertenecen a $C_{2k+1}$ pero no a $H$. No se como cerrar la idea, pero esta ahiiii!!(ALE).
 
 
 \newpage
