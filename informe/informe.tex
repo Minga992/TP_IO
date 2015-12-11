@@ -55,7 +55,7 @@
 \materia{Investigación operativa}
 \submateria{Segundo Cuatrimestre de 2015}
 \titulo{Coloreo Particionado de Grafos}
-\subtitulo{Planos de Corte (INSERTE MEJORAS)}
+%\subtitulo{Planos de Corte (INSERTE MEJORAS)}
 \integrante{Confalonieri, Gisela Belén}{511/11}{gise_5291@yahoo.com.ar} % por cada integrante (apellido, nombre) (n° libreta) (e-mail)
 \integrante{Mignanelli, Alejandro Rubén}{609/11}{minga_titere@hotmail.com} 
 
@@ -93,7 +93,7 @@ Los objetivos del trabajo son los siguientes:
 	
 	\item {\bf Modelado de un PLEM:}
 	
-	El modelado de un PLEM (Problema de Programación Lineal Entero Mixto) cumple un rol muy importante. Dado que PLEM es NP-difícil, es importante ajustar lo mejor posible el conjunto de soluciones factibles, de manera de tener menos "opciones" que recorrer.  Por ejemplo, en el caso de coloreo de grafos existe el problema de que tiene muchas soluciones simétricas para un mismo grafo, que al fin y al cabo representan una misma solución.  Por ello, parte del objetivo de este trabajo es no sólo realizar un PLEM correcto, sino elaborar estrategias que permitan ver la menor cantidad de soluciones posibles.
+	El modelado de un PLEM (Problema de Programación Lineal Entero Mixto) cumple un rol muy importante. Dado que PLEM es NP-difícil, es importante ajustar lo mejor posible el conjunto de soluciones factibles, de manera de tener menos ``opciones'' que recorrer.  Por ejemplo, en el caso de coloreo de grafos existe el problema de que tiene muchas soluciones simétricas para un mismo grafo, que al fin y al cabo representan una misma solución.  Por ello, parte del objetivo de este trabajo es no sólo realizar un PLEM correcto, sino elaborar estrategias que permitan ver la menor cantidad de soluciones posibles.
 	
 	\item {\bf Desigualdades válidas e implementación de planos de corte:}
 	
@@ -310,7 +310,7 @@ Todas las corridas se realizaron sobre una CPU Intel Core i3 de 4 núcleos a 2,2
 
 \subsection{Instancias de prueba}
 
-%La idea original del trabajo era incluir en las corridas pertinentes algunas instancias DIMAC, pero dado el tamaño de las mismas se decidió trabajar sólo sobre instancias propias con tamaños manejables por los algoritmos utilizados, con el objetivo de poder visualizar en un tiempo razonable las diferencias entre las diferentes opciones.
+La idea original del trabajo era incluir en las corridas pertinentes algunas instancias DIMACS, pero dado el tamaño de las mismas se decidió trabajar sólo sobre instancias propias con tamaños manejables por los algoritmos utilizados, con el objetivo de poder visualizar en un tiempo razonable las diferencias entre las diferentes opciones.
 
 Hemos generado un set de instancias aleatorias con distintas cantidades de nodos, densidades de aristas y tamaño de partición. En el Cuadro \ref{tab:instancias} se muestra la información de las mismas.
 
@@ -377,7 +377,7 @@ Instancia & Cant Nodos & Densidad & Tam Partición\\
 \subsubsection{Planos de Corte}
 
 Hemos corrido un algoritmo de planos de corte utilizando las heurísticas de clique y odd-hole.  Se configuró para que se realicen 5 iteraciones de planos de corte, y en cada una se busque hasta 10 cortes de cada familia.  El Cuadro \ref{tab:cortes} se muestra la evolución del valor objetivo en cada iteración.
-
+%\newpage
 %\begin{table}[!htb]
 \begin{center}
 \begin{longtable}{|c|c|c|c|c|c|c|c|}
@@ -534,6 +534,11 @@ Instancia&Corte&Rel 1&Rel 2&Rel 3&Rel 4&Rel 5&Opt\\
 \end{center}
 %\end{table}
 
+Se puede observar que la heurística del agujero impar arroja, en general, mejoras menos significativas del valor objetivo. Esto se puede deber a que un agujero impar de al menos 5 nodos no es tan fácil de encontrar en comparación a una clique de 2 ó 3 nodos, sobre todo siendo que las instancias utilizadas se generaron de manera aleatoria y sin ninguna característica particular.  De hecho, cuando se trata de grafos con pocos nodos, nuestra heurística encuentra pocos o ningún agujero apropiado. También es de notar el hecho de que si bien los mejores resultados parecen ser arrojados por la combinación de ambas heurísticas, en algunos casos usar sólo cliques lleva a una mejor solución de la relajación. No nos queda muy en claro por qué sucede esto, pero se podría aventurar que el cambio producido por las sucesivas soluciones de la relajación al realizar ambas estrategias, llevaron al hallazgo de cliques y agujeros de menor importancia para estos casos particulares.
+
+Por otro lado, cabe resaltar que la tabla parecería indicar que cuanto más denso es el grafo, las soluciones dadas al aplicar nuestros planos de corte se ubican más lejos de la solución original. Esto podría deberse a que al ser más denso el grafo, estamos tratando con un problema más complejo (aumento de la cantidad de restricciones), y en este contexto los cortes generados no impactan de manera significativa.
+
+
 \subsubsection{Métodos de resolución}
 
 Cada instancia fue resuelta una vez con {\it Branch and Bound} y una vez con {\it Cut and Branch}. En el primer caso, se desactivaron todos los preprocesamientos que CPLEX realiza automáticamente, de manera de tener un {\it Branch and Bound} puro, y en el segundo se aplicaron los cortes clique y odd-hole sobre el nodo raíz (5 iteraciones de planos de corte, hasta 10 cortes de cada familia por iteración). 
@@ -566,11 +571,147 @@ Las combinaciones utilizadas, entonces, fueron:
 	\item Cut and Branch con Depth First Search y Maximum Infeasibility. (C\&B dfs_max)
 \end{itemize}
 
-Los cuadros bla, ble y bli muestran en comparación los tiempos de ejecución, la cantidad de nodos recorridos y el valor objetivo de cada resolución.
+Los cuadros \ref{tab:tiempos} y \ref{tab:nodos} muestran en comparación los tiempos de ejecución y la cantidad de nodos recorridos.
+
+\begin{table}[!htb]
+\begin{center}
+\scalebox{0.85}{
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+Instancia&B\&B bb_min&C\&B bb_min&B\&B bb_max&C\&B bb_max&B\&B dfs_min&C\&B dfs_min&B\&B dfs_max&C\&B dfs_max\\
+\hline
+\hline
+10_2&0.00817704&0.00396299&0.00784397&0.00377202&0.00295782&0.00356007&0.00702&0.00376296\\
+\hline
+10_4&0.00556493&0.003582&0.00507998&0.00317883&0.00423908&0.00440192&0.00598311&0.00358891\\
+\hline
+10_6&0.00516009&0.00465703&0.00512791&0.00373411&0.00352597&0.00340414&0.00368905&0.00392509\\
+\hline
+10_8&0.00447989&0.00491095&0.00998902&0.003829&0.018265&0.006953&0.00925493&0.00416493\\
+\hline
+20_2&0.0121379&0.0125961&0.026387&0.0280669&0.11162&0.0244279&0.047262&0.03755\\
+\hline
+20_4&0.0472369&0.0542049&0.162116&0.053056&0.116251&1.01158&3.65766&0.0483739\\
+\hline
+20_6&289.089&2.20215&7.91918&42.5035&14.1231&3.82658&90.7334&36.3658\\
+\hline
+20_8&3.62331&108.505&1.80254&23.6802&1.53601&0.032114&2.87022&24.8268\\
+\hline
+30_2_30&1.7933&0.264302&1.80697&0.291555&6.27657&0.091531&21.6015&0.10904\\
+\hline
+30_4_30&EXCEEDED&56.9797&812.904&158.88&EXCEEDED&686.48&126.995&709.174\\
+\hline
+30_6_30&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED\\
+\hline
+30_8_30&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED&EXCEEDED\\
+\hline
+30_2_15&0.0639958&0.073993&0.0686121&0.0707431&0.0141408&0.015296&0.0890319&0.0394049\\
+\hline
+30_4_15&0.473762&0.285445&0.185458&0.0899439&0.0504482&0.108304&0.078253&0.146229\\
+\hline
+30_6_15&0.238924&0.468219&0.16859&4.55121&1.60669&0.204959&1.71758&1.25974\\
+\hline
+30_8_15&10.8477&45.9958&26.855&2.69702&6.27454&18.8419&4.8434&27.6312\\
+\hline
+30_2_10&0.052624&0.0360329&0.0632908&0.072603&0.00950503&0.0100551&0.00671983&0.00903082\\
+\hline
+30_4_10&0.037679&0.0424449&0.142905&0.0297949&0.0303299&0.0165229&0.0340099&0.023515\\
+\hline
+30_6_10&0.125693&0.122483&0.122681&0.118635&0.125298&0.064764&0.0432501&0.0670681\\
+\hline
+30_8_10&0.283003&1.48016&0.394975&0.141603&0.410445&0.849894&0.136766&0.07359\\
+\hline
+30_2_5&0.0100551&0.00908589&0.0103738&0.025409&0.00478601&0.0079329&0.00349712&0.00430799\\
+\hline
+30_4_5&0.020565&0.029243&0.0140061&0.042057&0.00444293&0.0161209&0.00715399&0.016217\\
+\hline
+30_6_5&0.0213292&0.030966&0.022845&0.107575&0.00678015&0.0124071&0.01565&0.0312059\\
+\hline
+30_8_5&0.0788221&0.0691769&0.0811901&0.0746622&0.00953984&0.028486&0.0813901&0.0927289\\
+\hline
+\end{tabular}}
+\end{center}
+\caption{Tiempos de ejecución B\&B y C\&B}\label{tab:tiempos}
+\end{table}
+
+\begin{table}[!htb]
+\begin{center}
+\scalebox{0.85}{
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+Instancia&B\&B bb_min&C\&B bb_min&B\&B bb_max&C\&B bb_max&B\&B dfs_min&C\&B dfs_min&B\&B dfs_max&C\&B dfs_max\\
+\hline
+\hline
+10_2&0&0&0&0&0&0&0&0\\
+\hline
+10_4&0&0&0&0&0&0&0&0\\
+\hline
+10_6&0&0&0&0&0&0&0&0\\
+\hline
+10_8&0&0&0&0&39&0&0&0\\
+\hline
+20_2&0&0&7&0&323&0&60&0\\
+\hline
+20_4&38&0&262&0&184&1116&6843&0\\
+\hline
+20_6&196583&1001&14606&50729&27132&6569&161853&51037\\
+\hline
+20_8&2292&42067&2896&22205&2422&0&4439&33485\\
+\hline
+30_2_30&1393&10&792&0&6400&0&24016&0\\
+\hline
+30_4_30&(215522)&12687&421360&27420&(282400)&204199&90835&179715\\
+\hline
+30_6_30&(140238)&(76117)&(88764)&(101331)&(349096)&(323320)&(262261)&(404507)\\
+\hline
+30_8_30&(176566)&(151798)&(172051)&(119726)&(466448)&(241704)&(268941)&(253541)\\
+\hline
+30_2_15&4&0&0&0&0&0&0&0\\
+\hline
+30_4_15&225&0&17&0&7&0&0&0\\
+\hline
+30_6_15&10&40&6&1463&2008&118&1980&801\\
+\hline
+30_8_15&4213&9741&9690&498&5274&12795&3303&17965\\
+\hline
+30_2_10&3&0&6&0&0&0&0&0\\
+\hline
+30_4_10&0&0&10&0&3&0&0&0\\
+\hline
+30_6_10&9&0&9&0&174&0&5&7\\
+\hline
+30_8_10&65&453&107&0&500&880&69&0\\
+\hline
+30_2_5&0&0&0&0&0&0&0&0\\
+\hline
+30_4_5&0&0&0&0&0&0&0&0\\
+\hline
+30_6_5&0&0&0&13&0&0&0&0\\
+\hline
+30_8_5&10&0&18&0&0&0&19&0\\
+\hline
+\end{tabular}}
+\end{center}
+\caption{Nodos recorridos B\&B y C\&B}\label{tab:nodos}
+\end{table}
 
 \newpage
 
-\section{Conclusiones y trabajo futuro} 
+Se puede observar, como es lógico, una cierta correspondencia entre la cantidad de nodos que se visitó en cada caso con el tiempo de ejecución consumido. 
+
+Por otro lado, se ve que para Best Bound, con ambas estrategias de branching, C\&B parece recorrer en general menos nodos y tomar menos tiempo que B\&B. Sin embargo, cuando se corre con DFS esta diferencia no es tan evidente. Esto puede deberse a que el DFS recorre el árbol en profundidad, lo que puede conducir a un recorrido de ``fuerza bruta'' que no permita podar las posibles soluciones de manera eficaz, independientemente de la selección de variable de branching. De todos modos, para los casos de coloreo con mayor cantidad de nodos, C\&B muestra una mejor performance.
+
+\newpage
+
+\section{Conclusiones}
+
+Luego del trabajo realizado y de los resultados obtenidos y analizados, se desprenden las siguientes conclusiones:
+
+\paragraph{Planos de corte:} Se puede observar que la utilización de las desigualdades estudiadas producen una mejora en la solución de la relajación lineal,iteración a iteración, pareciendo tener mayor impacto la desigualdad clique. Quedaría pendiente ver si este impacto podría acrecentarse con una combinación diferente de cantidad de iteraciones de planos de corte y cantidad de cortes clique/agujero buscados por iteración. 
+
+\paragraph{Branch-and-Bound vs Cut-and-Branch:} Si bien de antemano se podría considerar que Cut-and-Branch tendría una mejor performance en comparación con Branch-and-Bound, nos encontramos con que esta diferencia es mínima e incluso discutible. Esto podría deberse a una implementación demasiado ingenua de los algoritmos de separación, o bien a que las familias utilizadas para separar y la cantidad de cortes introducidos en el nodo raíz no sean suficientes para plasmar una diferencia importante.
+
+\paragraph{Instancias DIMACS:} Si bien la idea original del trabajo contemplaba realizar pruebas sobre instancias de coloreo DIMACS, no se logro trabajar con ellas ya que los tiempos de ejecución eran muy elevados.
 
 \end{document}
 
